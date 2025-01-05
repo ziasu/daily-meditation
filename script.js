@@ -34,9 +34,7 @@ function updateTotalTime(minutes) {
 const minutesDisplay = document.getElementById('minutes');
 const secondsDisplay = document.getElementById('seconds');
 const pauseButton = document.getElementById('pauseButton');
-const backgroundMusic = document.getElementById('backgroundMusic');
 const musicToggle = document.getElementById('musicToggle');
-const stopButton = document.getElementById('stopButton');
 const fiveMinMusic = document.getElementById('fiveMinMusic');
 const tenMinMusic = document.getElementById('tenMinMusic');
 let currentMusic = null;
@@ -52,6 +50,7 @@ function setTimer(minutes) {
     
     selectedMinutes = minutes;
     timeLeft = minutes * 60;
+    
     currentMusic = minutes === 5 ? fiveMinMusic : tenMinMusic;
     
     updateDisplay();
@@ -69,7 +68,6 @@ function startMeditation() {
     if (timeLeft === 0) return;
     
     pauseButton.disabled = false;
-    stopButton.disabled = false;
     pauseButton.textContent = 'Pause';
 
     if (musicToggle.checked && currentMusic) {
@@ -109,22 +107,7 @@ function endMeditation() {
         currentMusic.currentTime = 0;
     }
     pauseButton.disabled = true;
-    stopButton.disabled = true;
     updateTotalTime(selectedMinutes);
-}
-
-function stopMeditation() {
-    clearInterval(timerId);
-    timerId = null;
-    timeLeft = 0;
-    updateDisplay();
-    pauseButton.disabled = true;
-    stopButton.disabled = true;
-    pauseButton.textContent = 'Pause';
-    if (currentMusic) {
-        currentMusic.pause();
-        currentMusic.currentTime = 0;
-    }
 }
 
 musicToggle.addEventListener('change', () => {
