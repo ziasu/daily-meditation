@@ -4,65 +4,28 @@ let selectedMinutes = 0;
 const YEAR = '2025';
 let totalMeditationMinutes = 0;
 
-// JSONbin.io configuration
-const JSONBIN_ACCESS_KEY = '$2a$10$MvlpIXdmzbNfmyAQtYM.AOmW2pNgBZlhsz10Y.FXc5lv687YKo.di';
-const BIN_ID = '677a2f6fe41b4d34e4701ff0';
-
-// Function to fetch meditation data
-async function fetchMeditationData() {
+// Function to fetch meditation data from localStorage
+function fetchMeditationData() {
     try {
         console.log('Fetching meditation data...');
-        const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-            method: 'GET',
-            headers: {
-                'X-Master-Key': JSONBIN_ACCESS_KEY,
-                'X-Bin-Meta': false
-            }
-        });
-        console.log('Response status:', response.status);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        console.log('Fetched data:', data);
-        totalMeditationMinutes = data[YEAR] || 0;
+        const savedMinutes = localStorage.getItem(`meditation_minutes_${YEAR}`);
+        totalMeditationMinutes = parseInt(savedMinutes) || 0;
         displayTotalTime();
     } catch (error) {
-        console.error('Detailed error fetching data:', error);
+        console.error('Error fetching data:', error);
         totalMeditationMinutes = 0;
         displayTotalTime();
     }
 }
 
-// Function to update meditation data
-async function updateMeditationData(minutes) {
+// Function to update meditation data in localStorage
+function updateMeditationData(minutes) {
     try {
         totalMeditationMinutes += minutes;
-        const content = {
-            [YEAR]: totalMeditationMinutes
-        };
-        
-        const updateResponse = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Master-Key': JSONBIN_ACCESS_KEY,
-                'X-Bin-Meta': false
-            },
-            body: JSON.stringify(content)
-        });
-        
-        console.log('Update response status:', updateResponse.status);
-        if (!updateResponse.ok) {
-            const errorText = await updateResponse.text();
-            console.error('Update error response:', errorText);
-            throw new Error(`HTTP error! status: ${updateResponse.status}`);
-        }
-        
-        console.log('Successfully updated meditation data');
+        localStorage.setItem(`meditation_minutes_${YEAR}`, totalMeditationMinutes);
         displayTotalTime();
     } catch (error) {
-        console.error('Detailed error updating data:', error);
+        console.error('Error updating data:', error);
     }
 }
 
