@@ -4,21 +4,17 @@ let selectedMinutes = 0;
 const YEAR = '2025';
 let totalMeditationMinutes = 0;
 
-// Function to fetch meditation data from localStorage
 function fetchMeditationData() {
     try {
-        console.log('Fetching meditation data...');
         const savedMinutes = localStorage.getItem(`meditation_minutes_${YEAR}`);
         totalMeditationMinutes = parseInt(savedMinutes) || 0;
         displayTotalTime();
     } catch (error) {
-        console.error('Error fetching data:', error);
         totalMeditationMinutes = 0;
         displayTotalTime();
     }
 }
 
-// Function to update meditation data in localStorage
 function updateMeditationData(minutes) {
     try {
         totalMeditationMinutes += minutes;
@@ -29,10 +25,8 @@ function updateMeditationData(minutes) {
     }
 }
 
-// Load initial data when page loads
 window.addEventListener('load', fetchMeditationData);
 
-// Replace the old updateTotalTime function
 function updateTotalTime(minutes) {
     updateMeditationData(minutes);
 }
@@ -45,7 +39,6 @@ const musicToggle = document.getElementById('musicToggle');
 const stopButton = document.getElementById('stopButton');
 
 function setTimer(minutes) {
-    // Stop current meditation if running
     if (timerId !== null) {
         clearInterval(timerId);
         backgroundMusic.pause();
@@ -55,8 +48,6 @@ function setTimer(minutes) {
     selectedMinutes = minutes;
     timeLeft = minutes * 60;
     updateDisplay();
-    
-    // Start meditation immediately
     startMeditation();
 }
 
@@ -92,11 +83,9 @@ function startMeditation() {
 
 function pauseMeditation() {
     if (timerId === null) {
-        // If paused, resume meditation
         startMeditation();
         pauseButton.textContent = 'Pause';
     } else {
-        // If running, pause meditation
         clearInterval(timerId);
         timerId = null;
         pauseButton.disabled = false;
@@ -112,7 +101,6 @@ function endMeditation() {
     backgroundMusic.currentTime = 0;
     pauseButton.disabled = true;
     stopButton.disabled = true;
-    // Add completed meditation time to total
     updateTotalTime(selectedMinutes);
 }
 
@@ -138,11 +126,9 @@ musicToggle.addEventListener('change', () => {
     }
 });
 
-// Add function to display total time
 function displayTotalTime() {
     document.getElementById('totalTime').textContent = 
         `Total Meditation in ${YEAR}: ${totalMeditationMinutes} minutes`;
 }
 
-// Call displayTotalTime when page loads
 window.addEventListener('load', displayTotalTime); 
