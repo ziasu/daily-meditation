@@ -7,19 +7,26 @@ let totalMeditationMinutes = 0;
 // GitHub configuration
 const GITHUB_USERNAME = 'ziasu';
 const GITHUB_REPO = 'daily-meditation';
-const GITHUB_TOKEN = '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';
+const GITHUB_TOKEN = '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';
 const FILE_PATH = 'meditation_data.json';
 
 // Function to fetch meditation data from GitHub
 async function fetchMeditationData() {
     try {
+        console.log('Fetching meditation data...');
         const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${FILE_PATH}`);
+        console.log('Response status:', response.status);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const data = await response.json();
-        const content = JSON.parse(atob(data.sha ? data.content : 'eyIyMDI1IjowfQ==')); // Default to {"2025":0} if file doesn't exist
+        console.log('Fetched data:', data);
+        const content = JSON.parse(atob(data.sha ? data.content : 'eyIyMDI1IjowfQ==')); 
+        console.log('Parsed content:', content);
         totalMeditationMinutes = content[YEAR] || 0;
         displayTotalTime();
     } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('Detailed error fetching data:', error);
         totalMeditationMinutes = 0;
         displayTotalTime();
     }
@@ -28,16 +35,19 @@ async function fetchMeditationData() {
 // Function to update meditation data on GitHub
 async function updateMeditationData(minutes) {
     try {
-        // First get the current file to get its SHA
+        console.log('Updating meditation data with minutes:', minutes);
         const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${FILE_PATH}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const fileData = await response.json();
+        console.log('Current file data:', fileData);
         
-        // Update the content
         totalMeditationMinutes += minutes;
         const content = JSON.parse(atob(fileData.content || 'eyIyMDI1IjowfQ=='));
         content[YEAR] = totalMeditationMinutes;
+        console.log('New content to save:', content);
         
-        // Prepare the update
         const updateResponse = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${FILE_PATH}`, {
             method: 'PUT',
             headers: {
@@ -51,11 +61,19 @@ async function updateMeditationData(minutes) {
             })
         });
         
+        console.log('Update response status:', updateResponse.status);
+        if (!updateResponse.ok) {
+            const errorText = await updateResponse.text();
+            console.error('Update error response:', errorText);
+            throw new Error(`HTTP error! status: ${updateResponse.status}`);
+        }
+        
         if (updateResponse.ok) {
+            console.log('Successfully updated meditation data');
             displayTotalTime();
         }
     } catch (error) {
-        console.error('Error updating data:', error);
+        console.error('Detailed error updating data:', error);
     }
 }
 
