@@ -19,12 +19,12 @@
         </div>
 
         <div class="timer-controls">
-            <button onclick="setTimer(5)">5 Minutes</button>
-            <button onclick="setTimer(10)">10 Minutes</button>
+            <button id="fiveMinButton" onclick="handleTimer(5)">5 Minutes</button>
+            <button id="tenMinButton" onclick="handleTimer(10)">10 Minutes</button>
         </div>
 
         <div class="meditation-controls">
-            <button id="pauseButton" onclick="pauseMeditation()" disabled>Pause</button>
+            <button id="stopButton" onclick="stopMeditation()" disabled>Stop</button>
         </div>
 
         <div class="audio-controls">

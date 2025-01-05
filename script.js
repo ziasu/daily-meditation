@@ -33,28 +33,49 @@ function updateTotalTime(minutes) {
 
 const minutesDisplay = document.getElementById('minutes');
 const secondsDisplay = document.getElementById('seconds');
-const pauseButton = document.getElementById('pauseButton');
+const stopButton = document.getElementById('stopButton');
 const musicToggle = document.getElementById('musicToggle');
 const fiveMinMusic = document.getElementById('fiveMinMusic');
 const tenMinMusic = document.getElementById('tenMinMusic');
 let currentMusic = null;
+let activeButton = null;
 
-function setTimer(minutes) {
-    if (timerId !== null) {
+function handleTimer(minutes) {
+    const button = minutes === 5 ? document.getElementById('fiveMinButton') : document.getElementById('tenMinButton');
+    
+    if (timerId !== null && activeButton === button) {
+        // If same button clicked while running, pause the meditation
         clearInterval(timerId);
+        timerId = null;
         if (currentMusic) {
             currentMusic.pause();
-            currentMusic.currentTime = 0;
         }
+        button.textContent = `${minutes} Minutes`;
+        stopButton.disabled = false;
+    } else {
+        // If different button or starting new meditation
+        if (timerId !== null) {
+            // Clear existing meditation if any
+            clearInterval(timerId);
+            if (currentMusic) {
+                currentMusic.pause();
+                currentMusic.currentTime = 0;
+            }
+            if (activeButton) {
+                activeButton.textContent = `${activeButton === document.getElementById('fiveMinButton') ? '5' : '10'} Minutes`;
+            }
+        }
+        
+        selectedMinutes = minutes;
+        timeLeft = minutes * 60;
+        currentMusic = minutes === 5 ? fiveMinMusic : tenMinMusic;
+        activeButton = button;
+        button.textContent = 'Pause';
+        stopButton.disabled = false;
+        
+        updateDisplay();
+        startMeditation();
     }
-    
-    selectedMinutes = minutes;
-    timeLeft = minutes * 60;
-    
-    currentMusic = minutes === 5 ? fiveMinMusic : tenMinMusic;
-    
-    updateDisplay();
-    startMeditation();
 }
 
 function updateDisplay() {
@@ -66,9 +87,6 @@ function updateDisplay() {
 
 function startMeditation() {
     if (timeLeft === 0) return;
-    
-    pauseButton.disabled = false;
-    pauseButton.textContent = 'Pause';
 
     if (musicToggle.checked && currentMusic) {
         currentMusic.play();
@@ -86,19 +104,20 @@ function startMeditation() {
     }, 1000);
 }
 
-function pauseMeditation() {
-    if (timerId === null) {
-        startMeditation();
-        pauseButton.textContent = 'Pause';
-    } else {
-        clearInterval(timerId);
-        timerId = null;
-        pauseButton.disabled = false;
-        if (musicToggle.checked && currentMusic) {
-            currentMusic.pause();
-        }
-        pauseButton.textContent = 'Continue';
+function stopMeditation() {
+    clearInterval(timerId);
+    timerId = null;
+    timeLeft = 0;
+    updateDisplay();
+    if (currentMusic) {
+        currentMusic.pause();
+        currentMusic.currentTime = 0;
     }
+    if (activeButton) {
+        activeButton.textContent = `${activeButton === document.getElementById('fiveMinButton') ? '5' : '10'} Minutes`;
+        activeButton = null;
+    }
+    stopButton.disabled = true;
 }
 
 function endMeditation() {
@@ -106,14 +125,18 @@ function endMeditation() {
         currentMusic.pause();
         currentMusic.currentTime = 0;
     }
-    pauseButton.disabled = true;
+    if (activeButton) {
+        activeButton.textContent = `${activeButton === document.getElementById('fiveMinButton') ? '5' : '10'} Minutes`;
+        activeButton = null;
+    }
+    stopButton.disabled = true;
     updateTotalTime(selectedMinutes);
 }
 
 musicToggle.addEventListener('change', () => {
     if (!musicToggle.checked && currentMusic) {
         currentMusic.pause();
-    } else if (timeLeft > 0 && !pauseButton.disabled && currentMusic) {
+    } else if (timeLeft > 0 && !stopButton.disabled && currentMusic) {
         currentMusic.play();
     }
 });
