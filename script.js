@@ -7,7 +7,7 @@ let totalMeditationMinutes = 0;
 // GitHub configuration
 const GITHUB_USERNAME = 'ziasu';
 const GITHUB_REPO = 'daily-meditation';
-const GITHUB_TOKEN = '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';
+const GITHUB_TOKEN = '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';
 const FILE_PATH = 'meditation_data.json';
 
 // Function to fetch meditation data from GitHub
