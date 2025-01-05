@@ -7,14 +7,19 @@ let totalMeditationMinutes = 0;
 // GitHub configuration
 const GITHUB_USERNAME = 'ziasu';
 const GITHUB_REPO = 'daily-meditation';
-const GITHUB_TOKEN = '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';
+const GITHUB_TOKEN = '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';
 const FILE_PATH = 'meditation_data.json';
 
 // Function to fetch meditation data from GitHub
 async function fetchMeditationData() {
     try {
         console.log('Fetching meditation data...');
-        const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${FILE_PATH}`);
+        const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${FILE_PATH}`, {
+            headers: {
+                'Authorization': `token ${GITHUB_TOKEN}`,
+                'Content-Type': 'application/json',
+            }
+        });
         console.log('Response status:', response.status);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -36,7 +41,12 @@ async function fetchMeditationData() {
 async function updateMeditationData(minutes) {
     try {
         console.log('Updating meditation data with minutes:', minutes);
-        const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${FILE_PATH}`);
+        const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${FILE_PATH}`, {
+            headers: {
+                'Authorization': `token ${GITHUB_TOKEN}`,
+                'Content-Type': 'application/json',
+            }
+        });
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
