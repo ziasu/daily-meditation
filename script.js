@@ -5,8 +5,8 @@ const YEAR = '2025';
 let totalMeditationMinutes = 0;
 
 // JSONbin.io configuration
-const JSONBIN_API_KEY = '$2a$10$3H22x4/444IGGKIfaJGD3.ASeoNHqXZhgx7A8UEYmWQbdLUoBRGUG'; // Replace with your JSONbin.io API key
-const BIN_ID = '677a2ceee41b4d34e4701f2b';  // We'll get this after creating the bin
+const JSONBIN_API_KEY = '$2a$10$.bxyU0zfBl4HrSdbv/gDdueQfC9KVU9dVusZfaGisN5nvyDCuyXb.'; // Replace with your JSONbin.io API key
+const BIN_ID = '677a2f6fe41b4d34e4701ff0';  // We'll get this after creating the bin
 
 // Function to fetch meditation data
 async function fetchMeditationData() {
