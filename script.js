@@ -4,20 +4,17 @@ let selectedMinutes = 0;
 const YEAR = '2025';
 let totalMeditationMinutes = 0;
 
-// GitHub configuration
-const GITHUB_USERNAME = 'ziasu';
-const GITHUB_REPO = 'daily-meditation';
-const GITHUB_TOKEN = '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';
-const FILE_PATH = 'meditation_data.json';
+// JSONbin.io configuration
+const JSONBIN_API_KEY = '$2a$10$3H22x4/444IGGKIfaJGD3.ASeoNHqXZhgx7A8UEYmWQbdLUoBRGUG'; // Replace with your JSONbin.io API key
+const BIN_ID = '677a2ceee41b4d34e4701f2b';  // We'll get this after creating the bin
 
-// Function to fetch meditation data from GitHub
+// Function to fetch meditation data
 async function fetchMeditationData() {
     try {
         console.log('Fetching meditation data...');
-        const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${FILE_PATH}`, {
+        const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
             headers: {
-                'Authorization': `token ${GITHUB_TOKEN}`,
-                'Content-Type': 'application/json',
+                'X-Master-Key': JSONBIN_API_KEY
             }
         });
         console.log('Response status:', response.status);
@@ -26,9 +23,7 @@ async function fetchMeditationData() {
         }
         const data = await response.json();
         console.log('Fetched data:', data);
-        const content = JSON.parse(atob(data.sha ? data.content : 'eyIyMDI1IjowfQ==')); 
-        console.log('Parsed content:', content);
-        totalMeditationMinutes = content[YEAR] || 0;
+        totalMeditationMinutes = data.record[YEAR] || 0;
         displayTotalTime();
     } catch (error) {
         console.error('Detailed error fetching data:', error);
@@ -37,51 +32,30 @@ async function fetchMeditationData() {
     }
 }
 
-// Function to update meditation data on GitHub
+// Function to update meditation data
 async function updateMeditationData(minutes) {
     try {
-        console.log('Updating meditation data with minutes:', minutes);
-        const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${FILE_PATH}`, {
-            headers: {
-                'Authorization': `token ${GITHUB_TOKEN}`,
-                'Content-Type': 'application/json',
-            }
-        });
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const fileData = await response.json();
-        console.log('Current file data:', fileData);
-        
         totalMeditationMinutes += minutes;
-        const content = JSON.parse(atob(fileData.content || 'eyIyMDI1IjowfQ=='));
-        content[YEAR] = totalMeditationMinutes;
-        console.log('New content to save:', content);
+        const content = {
+            [YEAR]: totalMeditationMinutes
+        };
         
-        const updateResponse = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${FILE_PATH}`, {
+        const updateResponse = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
             method: 'PUT',
             headers: {
-                'Authorization': `token ${GITHUB_TOKEN}`,
                 'Content-Type': 'application/json',
+                'X-Master-Key': JSONBIN_API_KEY
             },
-            body: JSON.stringify({
-                message: 'Update meditation minutes',
-                content: btoa(JSON.stringify(content)),
-                sha: fileData.sha
-            })
+            body: JSON.stringify(content)
         });
         
         console.log('Update response status:', updateResponse.status);
         if (!updateResponse.ok) {
-            const errorText = await updateResponse.text();
-            console.error('Update error response:', errorText);
             throw new Error(`HTTP error! status: ${updateResponse.status}`);
         }
         
-        if (updateResponse.ok) {
-            console.log('Successfully updated meditation data');
-            displayTotalTime();
-        }
+        console.log('Successfully updated meditation data');
+        displayTotalTime();
     } catch (error) {
         console.error('Detailed error updating data:', error);
     }
