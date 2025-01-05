@@ -37,16 +37,23 @@ const pauseButton = document.getElementById('pauseButton');
 const backgroundMusic = document.getElementById('backgroundMusic');
 const musicToggle = document.getElementById('musicToggle');
 const stopButton = document.getElementById('stopButton');
+const fiveMinMusic = document.getElementById('fiveMinMusic');
+const tenMinMusic = document.getElementById('tenMinMusic');
+let currentMusic = null;
 
 function setTimer(minutes) {
     if (timerId !== null) {
         clearInterval(timerId);
-        backgroundMusic.pause();
-        backgroundMusic.currentTime = 0;
+        if (currentMusic) {
+            currentMusic.pause();
+            currentMusic.currentTime = 0;
+        }
     }
     
     selectedMinutes = minutes;
     timeLeft = minutes * 60;
+    currentMusic = minutes === 5 ? fiveMinMusic : tenMinMusic;
+    
     updateDisplay();
     startMeditation();
 }
@@ -65,8 +72,8 @@ function startMeditation() {
     stopButton.disabled = false;
     pauseButton.textContent = 'Pause';
 
-    if (musicToggle.checked) {
-        backgroundMusic.play();
+    if (musicToggle.checked && currentMusic) {
+        currentMusic.play();
     }
 
     timerId = setInterval(() => {
@@ -89,16 +96,18 @@ function pauseMeditation() {
         clearInterval(timerId);
         timerId = null;
         pauseButton.disabled = false;
-        if (musicToggle.checked) {
-            backgroundMusic.pause();
+        if (musicToggle.checked && currentMusic) {
+            currentMusic.pause();
         }
         pauseButton.textContent = 'Continue';
     }
 }
 
 function endMeditation() {
-    backgroundMusic.pause();
-    backgroundMusic.currentTime = 0;
+    if (currentMusic) {
+        currentMusic.pause();
+        currentMusic.currentTime = 0;
+    }
     pauseButton.disabled = true;
     stopButton.disabled = true;
     updateTotalTime(selectedMinutes);
@@ -112,17 +121,17 @@ function stopMeditation() {
     pauseButton.disabled = true;
     stopButton.disabled = true;
     pauseButton.textContent = 'Pause';
-    if (musicToggle.checked) {
-        backgroundMusic.pause();
-        backgroundMusic.currentTime = 0;
+    if (currentMusic) {
+        currentMusic.pause();
+        currentMusic.currentTime = 0;
     }
 }
 
 musicToggle.addEventListener('change', () => {
-    if (!musicToggle.checked) {
-        backgroundMusic.pause();
-    } else if (timeLeft > 0 && !pauseButton.disabled) {
-        backgroundMusic.play();
+    if (!musicToggle.checked && currentMusic) {
+        currentMusic.pause();
+    } else if (timeLeft > 0 && !pauseButton.disabled && currentMusic) {
+        currentMusic.play();
     }
 });
 
