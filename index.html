@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zen Meditation Timer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Zen Meditation Timer</h1>
+        
+        <div class="total-time">
+            <p id="totalTime">Total Meditation in 2025: 0 minutes</p>
+        </div>
+        
+        <div class="timer-display">
+            <span id="minutes">00</span>:<span id="seconds">00</span>
+        </div>
+
+        <div class="timer-controls">
+            <button onclick="setTimer(0.5)">30 Seconds</button>
+            <button onclick="setTimer(5)">5 Minutes</button>
+            <button onclick="setTimer(10)">10 Minutes</button>
+        </div>
+
+        <div class="meditation-controls">
+            <button id="pauseButton" onclick="pauseMeditation()" disabled>Pause</button>
+            <button id="stopButton" onclick="stopMeditation()" disabled>Stop</button>
+        </div>
+
+        <div class="audio-controls">
+            <label>
+                <input type="checkbox" id="musicToggle" checked>
+                Play Background Music
+            </label>
+        </div>
+    </div>
+    <audio id="backgroundMusic" loop>
+        <source src="https://ziasu.github.io/music/10min-Meditation-Positive_Energy.mp3" type="audio/mpeg">
+    </audio>
+    <script src="script.js"></script>
+</body>
+</html> 
