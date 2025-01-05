@@ -5,16 +5,18 @@ const YEAR = '2025';
 let totalMeditationMinutes = 0;
 
 // JSONbin.io configuration
-const JSONBIN_API_KEY = '$2a$10$MvlpIXdmzbNfmyAQtYM.AOmW2pNgBZlhsz10Y.FXc5lv687YKo.di'; // Replace with your JSONbin.io API key
-const BIN_ID = '677a2f6fe41b4d34e4701ff0';  // We'll get this after creating the bin
+const JSONBIN_ACCESS_KEY = '$2a$10$MvlpIXdmzbNfmyAQtYM.AOmW2pNgBZlhsz10Y.FXc5lv687YKo.di'; // Your access key
+const BIN_ID = '677a2f6fe41b4d34e4701ff0'; // Your bin ID
 
 // Function to fetch meditation data
 async function fetchMeditationData() {
     try {
         console.log('Fetching meditation data...');
-        const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+        const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+            method: 'GET',
             headers: {
-                'X-Master-Key': JSONBIN_API_KEY
+                'X-Access-Key': JSONBIN_ACCESS_KEY,
+                'X-Bin-Meta': false
             }
         });
         console.log('Response status:', response.status);
@@ -23,7 +25,7 @@ async function fetchMeditationData() {
         }
         const data = await response.json();
         console.log('Fetched data:', data);
-        totalMeditationMinutes = data.record[YEAR] || 0;
+        totalMeditationMinutes = data[YEAR] || 0;
         displayTotalTime();
     } catch (error) {
         console.error('Detailed error fetching data:', error);
@@ -44,13 +46,16 @@ async function updateMeditationData(minutes) {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Master-Key': JSONBIN_API_KEY
+                'X-Access-Key': JSONBIN_ACCESS_KEY,
+                'X-Bin-Meta': false
             },
             body: JSON.stringify(content)
         });
         
         console.log('Update response status:', updateResponse.status);
         if (!updateResponse.ok) {
+            const errorText = await updateResponse.text();
+            console.error('Update error response:', errorText);
             throw new Error(`HTTP error! status: ${updateResponse.status}`);
         }
         
