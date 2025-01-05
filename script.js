@@ -5,8 +5,8 @@ const YEAR = '2025';
 let totalMeditationMinutes = 0;
 
 // JSONbin.io configuration
-const JSONBIN_ACCESS_KEY = '$2a$10$MvlpIXdmzbNfmyAQtYM.AOmW2pNgBZlhsz10Y.FXc5lv687YKo.di'; // Your access key
-const BIN_ID = '677a2f6fe41b4d34e4701ff0'; // Your bin ID
+const JSONBIN_ACCESS_KEY = '$2a$10$MvlpIXdmzbNfmyAQtYM.AOmW2pNgBZlhsz10Y.FXc5lv687YKo.di';
+const BIN_ID = '677a2f6fe41b4d34e4701ff0';
 
 // Function to fetch meditation data
 async function fetchMeditationData() {
@@ -15,7 +15,7 @@ async function fetchMeditationData() {
         const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
             method: 'GET',
             headers: {
-                'X-Access-Key': JSONBIN_ACCESS_KEY,
+                'X-Master-Key': JSONBIN_ACCESS_KEY,
                 'X-Bin-Meta': false
             }
         });
@@ -46,7 +46,7 @@ async function updateMeditationData(minutes) {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Access-Key': JSONBIN_ACCESS_KEY,
+                'X-Master-Key': JSONBIN_ACCESS_KEY,
                 'X-Bin-Meta': false
             },
             body: JSON.stringify(content)
