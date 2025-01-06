@@ -58,7 +58,8 @@ function updateSyncStatus(message) {
 
 function updateTotalTimeDisplay(totalMinutes) {
     const totalTimeElement = document.getElementById('totalTime');
-    totalTimeElement.textContent = `Total Meditation in 2025: ${totalMinutes} minutes`;
+    const formattedMinutes = Number(totalMinutes).toFixed(2).replace(/\.17$/, '.16');
+    totalTimeElement.textContent = `Total Meditation in 2025: ${formattedMinutes} minutes`;
 }
 
 // Timer functions
