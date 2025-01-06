@@ -18,21 +18,41 @@ let activeButton = null;
 const JSONBIN_ACCESS_KEY = '677a2f4be41b4d34e4701fe2';
 const BIN_ID = '677a2f6fe41b4d34e4701ff0';
 
-// Move resetTotalTime function to the top level
-function resetTotalTime() {
-    if (confirm('Are you sure you want to reset your total meditation time?')) {
-        totalMeditationMinutes = 0;
-        displayTotalTime();
-        
-        // Update localStorage
-        localStorage.setItem(`meditation_minutes_${YEAR}`, totalMeditationMinutes);
-        
-        // Update cloud storage
-        updateCloudStorage();
+// Add this function at the top level, after the initial variable declarations
+async function resetTotalTime() {
+    try {
+        if (confirm('Are you sure you want to reset your total meditation time?')) {
+            // Reset the total time
+            totalMeditationMinutes = 0;
+            
+            // Update display
+            displayTotalTime();
+            
+            // Update localStorage
+            localStorage.setItem(`meditation_minutes_${YEAR}`, '0');
+            
+            // Update JSONbin.io
+            const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': JSONBIN_ACCESS_KEY,
+                    'X-Bin-Meta': false
+                },
+                body: JSON.stringify({ [YEAR]: 0 })
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to update cloud storage');
+            }
+        }
+    } catch (error) {
+        console.error('Error resetting total time:', error);
+        alert('Failed to reset total time. Please try again.');
     }
 }
 
-// Add this to make sure the function is available globally
+// Make sure the function is available globally
 window.resetTotalTime = resetTotalTime;
 
 // Function to fetch meditation data from JSONbin.io
