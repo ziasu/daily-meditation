@@ -9,6 +9,8 @@ async function saveMeditationTime(minutes) {
         // Get current data first
         const currentData = await getMeditationData();
         const totalMinutes = (currentData?.totalMinutes || 0) + minutes;
+        // Format the number to 2 decimal places
+        const formattedTotalMinutes = Number(totalMinutes.toFixed(2));
         
         const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
             method: 'PUT',
@@ -16,13 +18,13 @@ async function saveMeditationTime(minutes) {
                 'Content-Type': 'application/json',
                 'X-Master-Key': JSONBIN_API_KEY
             },
-            body: JSON.stringify({ totalMinutes })
+            body: JSON.stringify({ totalMinutes: formattedTotalMinutes })
         });
 
         if (!response.ok) throw new Error('Failed to save data');
         
         updateSyncStatus('Saved ✓');
-        updateTotalTimeDisplay(totalMinutes);
+        updateTotalTimeDisplay(formattedTotalMinutes);
     } catch (error) {
         console.error('Error saving meditation time:', error);
         updateSyncStatus('Save failed ✗');
@@ -58,7 +60,7 @@ function updateSyncStatus(message) {
 
 function updateTotalTimeDisplay(totalMinutes) {
     const totalTimeElement = document.getElementById('totalTime');
-    const formattedMinutes = Number(totalMinutes).toFixed(2).replace(/\.17$/, '.16');
+    const formattedMinutes = Number(totalMinutes).toFixed(2);
     totalTimeElement.textContent = `Total Meditation in 2025: ${formattedMinutes} minutes`;
 }
 
