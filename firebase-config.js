@@ -123,9 +123,6 @@ function saveMeditationTime(timeInSeconds) {
             };
         }).then((result) => {
             console.log('Save successful:', result); // Debug log
-            if (result.committed) {
-                updateTotalTimeDisplay(result.snapshot.val().totalTime);
-            }
         }).catch((error) => {
             console.error('Save failed:', error);
         });
