@@ -34,20 +34,23 @@ async function saveMeditationTime(minutes) {
 async function getMeditationData() {
     try {
         updateSyncStatus('Loading...');
+        console.log('Attempting to fetch from:', `https://api.jsonbin.io/v3/b/${BIN_ID}/latest`);
+        console.log('Using API Key:', JSONBIN_API_KEY);
+        
         const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
             headers: {
-                'X-Master-Key': JSONBIN_API_KEY,
-                'X-Access-Key': JSONBIN_API_KEY
+                'X-Master-Key': JSONBIN_API_KEY
             }
         });
 
         if (!response.ok) {
             console.error('Response status:', response.status);
-            console.error('Response text:', await response.text());
-            throw new Error('Failed to fetch data');
+            console.error('Response details:', await response.text());
+            throw new Error(`Failed to fetch data: ${response.status}`);
         }
         
         const data = await response.json();
+        console.log('Received data:', data);
         updateSyncStatus('Loaded ✓');
         updateTotalTimeDisplay(data.record.totalMinutes || 0);
         return data.record;
