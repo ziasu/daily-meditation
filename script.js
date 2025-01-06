@@ -73,19 +73,6 @@ async function updateMeditationData(minutes) {
 
 window.addEventListener('load', fetchMeditationData);
 
-function updateTotalTime(minutes) {
-    updateMeditationData(minutes);
-}
-
-const minutesDisplay = document.getElementById('minutes');
-const secondsDisplay = document.getElementById('seconds');
-const stopButton = document.getElementById('stopButton');
-const musicToggle = document.getElementById('musicToggle');
-const fiveMinMusic = document.getElementById('fiveMinMusic');
-const tenMinMusic = document.getElementById('tenMinMusic');
-let currentMusic = null;
-let activeButton = null;
-
 function handleTimer(minutes) {
     const button = minutes === 5 ? document.getElementById('fiveMinButton') : 
                   minutes === 10 ? document.getElementById('tenMinButton') :
@@ -193,7 +180,40 @@ function endMeditation() {
         activeButton = null;
     }
     stopButton.disabled = true;
-    updateTotalTime(selectedMinutes);
+    
+    // Update total time synchronously first
+    const seconds = Math.round(selectedMinutes * 60);
+    totalMeditationMinutes += seconds;
+    displayTotalTime();
+    
+    // Then update the cloud storage
+    localStorage.setItem(`meditation_minutes_${YEAR}`, totalMeditationMinutes);
+    updateCloudStorage();
+}
+
+// New function to handle cloud storage update
+async function updateCloudStorage() {
+    try {
+        const content = {
+            [YEAR]: totalMeditationMinutes
+        };
+        
+        const updateResponse = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Master-Key': JSONBIN_ACCESS_KEY,
+                'X-Bin-Meta': false
+            },
+            body: JSON.stringify(content)
+        });
+        
+        if (!updateResponse.ok) {
+            throw new Error(`HTTP error! status: ${updateResponse.status}`);
+        }
+    } catch (error) {
+        console.error('Error updating cloud storage:', error);
+    }
 }
 
 musicToggle.addEventListener('change', () => {
