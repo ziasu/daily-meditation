@@ -6,11 +6,17 @@ let isRunning = false;
 let currentAudio = null;
 let initialDuration = 0;
 
-function handleTimer(duration) {
+function handleTimer(minutes) {
+    // Check if user is logged in
+    if (!auth.currentUser) {
+        document.getElementById('authError').textContent = 'Please login first';
+        return;
+    }
+
     if (isRunning) return;
     
-    initialDuration = duration;
-    timeLeft = duration * 60;
+    initialDuration = minutes;
+    timeLeft = minutes * 60;
     isRunning = true;
     
     // Update UI
@@ -22,7 +28,7 @@ function handleTimer(duration) {
     // Handle music
     if (document.getElementById('musicToggle').checked) {
         // For 10-second timer, use 5-min music
-        const musicId = duration < 1 || duration === 5 ? 'fiveMinMusic' : 'tenMinMusic';
+        const musicId = minutes < 1 || minutes === 5 ? 'fiveMinMusic' : 'tenMinMusic';
         currentAudio = document.getElementById(musicId);
         if (currentAudio) {
             currentAudio.currentTime = 0; // Reset audio to start
@@ -112,12 +118,9 @@ function saveTotalTime(seconds) {
 }
 
 function clearTotalTime() {
-    try {
-        totalSeconds = 0;
-        localStorage.setItem(`meditation_seconds_${YEAR}`, 0);
-        updateTotalTimeDisplay();
-    } catch (error) {
-        console.error('Error clearing data:', error);
+    if (auth.currentUser) {
+        clearMeditationTime();
+        updateTotalTimeDisplay(0);
     }
 }
 

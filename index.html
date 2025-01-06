@@ -7,12 +7,40 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
+    <!-- Add login container -->
+    <div class="auth-container" id="authContainer">
+        <h2>Welcome to Zen Meditation Timer</h2>
+        <div class="auth-form">
+            <input type="email" id="emailInput" placeholder="Email" required>
+            <input type="password" id="passwordInput" placeholder="Password" required>
+            <div class="auth-buttons">
+                <button onclick="login()">Login</button>
+                <button onclick="signup()">Sign Up</button>
+            </div>
+            <!-- Add Google Sign-in button -->
+            <div class="google-signin">
+                <button onclick="signInWithGoogle()" class="google-btn">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Logo">
+                    Sign in with Google
+                </button>
+            </div>
+            <p id="authError" class="error-message"></p>
+        </div>
+    </div>
+
+    <!-- Add user info and logout -->
+    <div class="container" id="appContainer" style="display: none;">
+        <div class="user-info">
+            <span id="userEmail"></span>
+            <button onclick="logout()" class="logout-btn">Logout</button>
+        </div>
+        
         <h1>Zen Meditation Timer</h1>
         
         <div class="total-time">
             <p id="totalTime">Total Meditation in 2025: 0 seconds</p>
             <button id="clearButton" onclick="clearTotalTime()">Clear Total Time</button>
+            <p id="deviceId" style="font-size: 0.8em; color: #666;"></p>
         </div>
         
         <div class="timer-display">
@@ -42,6 +70,13 @@
     <audio id="tenMinMusic" loop>
         <source src="music/10min-Meditation.mp3" type="audio/mpeg">
     </audio>
+    
+    <!-- Add Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
+    <script src="firebase-config.js"></script>
     <script src="script.js"></script>
 </body>
 </html> 
