@@ -16,7 +16,7 @@ async function saveMeditationTime(minutes) {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Access-Key': JSONBIN_API_KEY
+                'X-Master-Key': JSONBIN_API_KEY
             },
             body: JSON.stringify({ totalMinutes: formattedTotalMinutes })
         });
@@ -38,7 +38,7 @@ async function getMeditationData() {
         // Log the request details
         const url = `https://api.jsonbin.io/v3/b/${BIN_ID}/latest`;
         const headers = {
-            'X-Access-Key': JSONBIN_API_KEY,
+            'X-Master-Key': JSONBIN_API_KEY,
             'Content-Type': 'application/json'
         };
         
