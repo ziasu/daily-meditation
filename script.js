@@ -18,6 +18,23 @@ let activeButton = null;
 const JSONBIN_ACCESS_KEY = '677a2f4be41b4d34e4701fe2';
 const BIN_ID = '677a2f6fe41b4d34e4701ff0';
 
+// Move resetTotalTime function to the top level
+function resetTotalTime() {
+    if (confirm('Are you sure you want to reset your total meditation time?')) {
+        totalMeditationMinutes = 0;
+        displayTotalTime();
+        
+        // Update localStorage
+        localStorage.setItem(`meditation_minutes_${YEAR}`, totalMeditationMinutes);
+        
+        // Update cloud storage
+        updateCloudStorage();
+    }
+}
+
+// Add this to make sure the function is available globally
+window.resetTotalTime = resetTotalTime;
+
 // Function to fetch meditation data from JSONbin.io
 async function fetchMeditationData() {
     try {
@@ -242,37 +259,3 @@ function displayTotalTime() {
 }
 
 window.addEventListener('load', displayTotalTime);
-
-// Add reset function
-async function resetTotalTime() {
-    if (confirm('Are you sure you want to reset your total meditation time?')) {
-        totalMeditationMinutes = 0;
-        displayTotalTime();
-        
-        // Update localStorage
-        localStorage.setItem(`meditation_minutes_${YEAR}`, totalMeditationMinutes);
-        
-        // Update cloud storage
-        try {
-            const content = {
-                [YEAR]: totalMeditationMinutes
-            };
-            
-            const updateResponse = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Master-Key': JSONBIN_ACCESS_KEY,
-                    'X-Bin-Meta': false
-                },
-                body: JSON.stringify(content)
-            });
-            
-            if (!updateResponse.ok) {
-                throw new Error(`HTTP error! status: ${updateResponse.status}`);
-            }
-        } catch (error) {
-            console.error('Error resetting cloud storage:', error);
-        }
-    }
-} 
