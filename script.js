@@ -68,14 +68,17 @@ function stopMeditation() {
     resetTimer();
     
     if (completedSeconds > 30) { // Only save if meditated for more than 30 seconds
-        saveTotalTime(completedSeconds);
+        saveMeditationTime(completedSeconds);
     }
 }
 
 function completeMeditation() {
     clearInterval(timer);
     resetTimer();
-    saveTotalTime(Math.round(initialDuration * 60));
+    
+    // Save the completed meditation time to Firebase
+    const completedSeconds = Math.round(initialDuration * 60);
+    saveMeditationTime(completedSeconds);
 }
 
 function resetTimer() {
@@ -96,25 +99,13 @@ function resetTimer() {
 }
 
 function loadTotalTime() {
-    try {
-        const savedSeconds = localStorage.getItem(`meditation_seconds_${YEAR}`);
-        totalSeconds = parseInt(savedSeconds) || 0;
-        updateTotalTimeDisplay();
-    } catch (error) {
-        console.error('Error loading data:', error);
-        totalSeconds = 0;
-        updateTotalTimeDisplay();
-    }
+    // We don't need this anymore as Firebase handles it
+    // The total time is loaded in firebase-config.js when user logs in
 }
 
 function saveTotalTime(seconds) {
-    try {
-        totalSeconds += seconds;
-        localStorage.setItem(`meditation_seconds_${YEAR}`, totalSeconds);
-        updateTotalTimeDisplay();
-    } catch (error) {
-        console.error('Error saving data:', error);
-    }
+    // Save to Firebase instead of localStorage
+    saveMeditationTime(seconds);
 }
 
 function clearTotalTime() {
@@ -124,10 +115,9 @@ function clearTotalTime() {
     }
 }
 
-function updateTotalTimeDisplay() {
+function updateTotalTimeDisplay(seconds) {
     const totalTimeElement = document.getElementById('totalTime');
-    totalTimeElement.textContent = `Total Meditation in 2025: ${totalSeconds} seconds`;
-}
-
-// Initialize when page loads
-window.addEventListener('load', loadTotalTime); 
+    if (totalTimeElement) {
+        totalTimeElement.textContent = `Total Meditation in 2025: ${seconds} seconds`;
+    }
+} 
