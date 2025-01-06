@@ -68,15 +68,4 @@ button:disabled {
 .total-time p {
     margin: 0;
     padding: 0;
-}
-
-.sync-status {
-    font-size: 0.8em;
-    color: #666;
-    margin-top: 5px;
-}
-
-#tenSecButton {
-    margin: 5px;
-    padding: 10px 20px;
 } 

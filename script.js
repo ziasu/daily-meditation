@@ -1,188 +1,149 @@
-let timer;
-let timeLeft;
-let isRunning = false;
-let currentAudio = null;
+let timeLeft = 0;
+let timerId = null;
+let selectedMinutes = 0;
+const YEAR = '2025';
+let totalMeditationMinutes = 0;
 
-// JSONBin.io API functions
-async function saveMeditationTime(minutes) {
+function fetchMeditationData() {
     try {
-        // Get current data first
-        const currentData = await getMeditationData();
-        const totalMinutes = (currentData?.totalMinutes || 0) + minutes;
-        // Format the number to 2 decimal places
-        const formattedTotalMinutes = Number(totalMinutes.toFixed(2));
-        
-        const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Master-Key': JSONBIN_API_KEY
-            },
-            body: JSON.stringify({ totalMinutes: formattedTotalMinutes })
-        });
-
-        if (!response.ok) throw new Error('Failed to save data');
-        
-        updateSyncStatus('Saved ✓');
-        updateTotalTimeDisplay(formattedTotalMinutes);
+        const savedMinutes = localStorage.getItem(`meditation_minutes_${YEAR}`);
+        totalMeditationMinutes = parseInt(savedMinutes) || 0;
+        displayTotalTime();
     } catch (error) {
-        console.error('Error saving meditation time:', error);
-        updateSyncStatus('Save failed ✗');
+        totalMeditationMinutes = 0;
+        displayTotalTime();
     }
 }
 
-async function getMeditationData() {
+function updateMeditationData(minutes) {
     try {
-        updateSyncStatus('Loading...');
-        
-        // Log the request details
-        const url = `https://api.jsonbin.io/v3/b/${BIN_ID}/latest`;
-        const headers = {
-            'X-Master-Key': JSONBIN_API_KEY,
-            'Content-Type': 'application/json'
-        };
-        
-        console.log('Request URL:', url);
-        console.log('Request headers:', headers);
-        
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: headers
-        });
+        totalMeditationMinutes += minutes;
+        localStorage.setItem(`meditation_minutes_${YEAR}`, totalMeditationMinutes);
+        displayTotalTime();
+    } catch (error) {
+        console.error('Error updating data:', error);
+    }
+}
 
-        // Log full response details
-        console.log('Response status:', response.status);
-        console.log('Response headers:', Object.fromEntries(response.headers));
-        
-        const responseText = await response.text();
-        console.log('Response body:', responseText);
+window.addEventListener('load', fetchMeditationData);
 
-        if (!response.ok) {
-            throw new Error(`Failed to fetch data: ${response.status} - ${responseText}`);
+function updateTotalTime(minutes) {
+    updateMeditationData(minutes);
+}
+
+const minutesDisplay = document.getElementById('minutes');
+const secondsDisplay = document.getElementById('seconds');
+const stopButton = document.getElementById('stopButton');
+const musicToggle = document.getElementById('musicToggle');
+const fiveMinMusic = document.getElementById('fiveMinMusic');
+const tenMinMusic = document.getElementById('tenMinMusic');
+let currentMusic = null;
+let activeButton = null;
+
+function handleTimer(minutes) {
+    const button = minutes === 5 ? document.getElementById('fiveMinButton') : document.getElementById('tenMinButton');
+    
+    if (timerId !== null && activeButton === button) {
+        // If same button clicked while running, pause the meditation
+        clearInterval(timerId);
+        timerId = null;
+        if (currentMusic) {
+            currentMusic.pause();
+        }
+        button.textContent = `${minutes} Minutes`;
+        stopButton.disabled = false;
+    } else {
+        // If different button or starting new meditation
+        if (timerId !== null) {
+            // Clear existing meditation if any
+            clearInterval(timerId);
+            if (currentMusic) {
+                currentMusic.pause();
+                currentMusic.currentTime = 0;
+            }
+            if (activeButton) {
+                activeButton.textContent = `${activeButton === document.getElementById('fiveMinButton') ? '5' : '10'} Minutes`;
+            }
         }
         
-        const data = JSON.parse(responseText);
-        console.log('Parsed data:', data);
+        selectedMinutes = minutes;
+        timeLeft = minutes * 60;
+        currentMusic = minutes === 5 ? fiveMinMusic : tenMinMusic;
+        activeButton = button;
+        button.textContent = 'Pause';
+        stopButton.disabled = false;
         
-        updateSyncStatus('Loaded ✓');
-        updateTotalTimeDisplay(data.record.totalMinutes || 0);
-        return data.record;
-    } catch (error) {
-        console.error('Error fetching meditation data:', error);
-        updateSyncStatus('Load failed ✗');
-        return { totalMinutes: 0 };
+        updateDisplay();
+        startMeditation();
     }
 }
 
-function updateSyncStatus(message) {
-    const syncStatus = document.getElementById('syncStatus');
-    syncStatus.textContent = message;
-}
-
-function updateTotalTimeDisplay(totalMinutes) {
-    const totalTimeElement = document.getElementById('totalTime');
-    const totalSeconds = Math.round(totalMinutes * 60);  // Convert to seconds and round
-    
-    let displayText;
-    if (totalMinutes < 1) {
-        // Less than 1 minute: show only seconds
-        displayText = `${totalSeconds} seconds`;
-    } else {
-        // More than 1 minute: show minutes and seconds
-        const minutes = Math.floor(totalSeconds / 60);
-        const seconds = totalSeconds % 60;
-        displayText = seconds > 0 ? 
-            `${minutes} minutes ${seconds} seconds` : 
-            `${minutes} minutes`;
-    }
-    
-    totalTimeElement.textContent = `Total Meditation in 2025: ${displayText}`;
-}
-
-// Timer functions
-function handleTimer(duration) {
-    if (isRunning) return;
-    
-    timeLeft = duration * 60;
-    isRunning = true;
-    
-    // Update UI
-    document.getElementById('stopButton').disabled = false;
-    document.getElementById('fiveMinButton').disabled = true;
-    document.getElementById('tenMinButton').disabled = true;
-    document.getElementById('tenSecButton').disabled = true;
-    
-    // Handle music
-    if (document.getElementById('musicToggle').checked) {
-        // For 10-second timer, use 5-min music
-        const musicDuration = duration < 1 ? 5 : duration;
-        currentAudio = document.getElementById(`${musicDuration}MinMusic`);
-        if (currentAudio) {
-            currentAudio.play();
-        }
-    }
-    
-    updateTimerDisplay();
-    timer = setInterval(updateTimer, 1000);
-}
-
-function updateTimer() {
-    if (timeLeft > 0) {
-        timeLeft--;
-        updateTimerDisplay();
-    } else {
-        completeMeditation();
-    }
-}
-
-function updateTimerDisplay() {
+function updateDisplay() {
     const minutes = Math.floor(timeLeft / 60);
     const seconds = timeLeft % 60;
-    
-    document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
-    document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+    minutesDisplay.textContent = minutes.toString().padStart(2, '0');
+    secondsDisplay.textContent = seconds.toString().padStart(2, '0');
+}
+
+function startMeditation() {
+    if (timeLeft === 0) return;
+
+    if (musicToggle.checked && currentMusic) {
+        currentMusic.play();
+    }
+
+    timerId = setInterval(() => {
+        timeLeft--;
+        updateDisplay();
+
+        if (timeLeft === 0) {
+            clearInterval(timerId);
+            timerId = null;
+            endMeditation();
+        }
+    }, 1000);
 }
 
 function stopMeditation() {
-    if (!isRunning) return;
-    
-    // Calculate completed minutes
-    const originalDuration = currentAudio?.id === 'fiveMinMusic' ? 5 : 10;
-    const completedSeconds = (originalDuration * 60) - timeLeft;
-    const completedMinutes = Math.ceil(completedSeconds / 60);
-    
-    clearInterval(timer);
-    resetTimer();
-    
-    if (completedSeconds > 30) { // Only save if meditated for more than 30 seconds
-        saveMeditationTime(completedMinutes);
+    clearInterval(timerId);
+    timerId = null;
+    timeLeft = 0;
+    updateDisplay();
+    if (currentMusic) {
+        currentMusic.pause();
+        currentMusic.currentTime = 0;
     }
-}
-
-function completeMeditation() {
-    const duration = currentAudio?.id === 'fiveMinMusic' ? 5 : 10;
-    clearInterval(timer);
-    resetTimer();
-    saveMeditationTime(duration);
-}
-
-function resetTimer() {
-    isRunning = false;
-    if (currentAudio) {
-        currentAudio.pause();
-        currentAudio.currentTime = 0;
-        currentAudio = null;
+    if (activeButton) {
+        activeButton.textContent = `${activeButton === document.getElementById('fiveMinButton') ? '5' : '10'} Minutes`;
+        activeButton = null;
     }
-    
-    document.getElementById('stopButton').disabled = true;
-    document.getElementById('fiveMinButton').disabled = false;
-    document.getElementById('tenMinButton').disabled = false;
-    
-    document.getElementById('minutes').textContent = '00';
-    document.getElementById('seconds').textContent = '00';
+    stopButton.disabled = true;
 }
 
-// Initialize
-window.addEventListener('load', () => {
-    getMeditationData();
-}); 
+function endMeditation() {
+    if (currentMusic) {
+        currentMusic.pause();
+        currentMusic.currentTime = 0;
+    }
+    if (activeButton) {
+        activeButton.textContent = `${activeButton === document.getElementById('fiveMinButton') ? '5' : '10'} Minutes`;
+        activeButton = null;
+    }
+    stopButton.disabled = true;
+    updateTotalTime(selectedMinutes);
+}
+
+musicToggle.addEventListener('change', () => {
+    if (!musicToggle.checked && currentMusic) {
+        currentMusic.pause();
+    } else if (timeLeft > 0 && !stopButton.disabled && currentMusic) {
+        currentMusic.play();
+    }
+});
+
+function displayTotalTime() {
+    document.getElementById('totalTime').textContent = 
+        `Total Meditation in ${YEAR}: ${totalMeditationMinutes} minutes`;
+}
+
+window.addEventListener('load', displayTotalTime); 
