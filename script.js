@@ -78,18 +78,15 @@ function stopMeditation() {
 }
 
 function completeMeditation() {
+    const completedSeconds = Math.round(initialDuration * 60);
+    
+    // Clear the timer first
     clearInterval(timer);
     resetTimer();
     
-    // Save the completed meditation time to Firebase
-    const completedSeconds = Math.round(initialDuration * 60);
+    // Then save the meditation time
+    console.log('Completing meditation with seconds:', completedSeconds);
     saveMeditationTime(completedSeconds);
-    
-    // Stop any playing audio
-    if (currentAudio) {
-        currentAudio.pause();
-        currentAudio.currentTime = 0;
-    }
 }
 
 function resetTimer() {
