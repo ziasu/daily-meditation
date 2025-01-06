@@ -13,6 +13,7 @@ const fiveMinMusic = document.getElementById('fiveMinMusic');
 const tenMinMusic = document.getElementById('tenMinMusic');
 let currentMusic = null;
 let activeButton = null;
+const resetTotalButton = document.getElementById('resetTotalButton');
 
 // JSONbin.io configuration
 const JSONBIN_ACCESS_KEY = '677a2f4be41b4d34e4701fe2';
@@ -279,3 +280,5 @@ function displayTotalTime() {
 }
 
 window.addEventListener('load', displayTotalTime);
+
+resetTotalButton.addEventListener('click', resetTotalTime);
