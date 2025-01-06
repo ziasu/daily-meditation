@@ -5,7 +5,7 @@ const YEAR = '2025';
 let totalMeditationMinutes = 0;
 
 // JSONbin.io configuration
-const JSONBIN_ACCESS_KEY = '677a2f4be41b4d34e4701fe2';
+const JSONBIN_ACCESS_KEY = '677b2fcce41b4d34e4707c22';
 const BIN_ID = '677b2f54e41b4d34e4707c02';
 
 // Wait for DOM to be fully loaded
