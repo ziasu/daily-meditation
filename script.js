@@ -17,7 +17,7 @@ function handleTimer(minutes) {
     initialDuration = minutes;
     // Add extra time based on the timer type
     if (minutes === 5) {
-        timeLeft = (5 * 60) + 37;  // 5:37 for 5-minute meditation
+        timeLeft = (5 * 60) + 25;  // 5:25 for 5-minute meditation
     } else if (minutes === 10) {
         timeLeft = (10 * 60) + 30; // 10:30 for 10-minute meditation (630 seconds)
     } else {
