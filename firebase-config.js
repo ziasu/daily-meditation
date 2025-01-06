@@ -80,19 +80,27 @@ auth.onAuthStateChanged((user) => {
 function loadUserMeditationTime(userId) {
     console.log('Loading data for user:', userId);
     const userRef = db.ref('users/' + userId);
-    userRef.on('value', (snapshot) => { // Changed from once() to on() to listen for changes
+    
+    // Remove any existing listeners first
+    userRef.off();
+    
+    // Add new listener
+    userRef.on('value', (snapshot) => {
         const userData = snapshot.val();
         console.log('Loaded user data:', userData);
-        if (userData && userData.totalTime) {
+        if (userData && userData.totalTime !== undefined) {
             console.log('Updating display with total time:', userData.totalTime);
-            updateTotalTimeDisplay(userData.totalTime);
+            const totalTimeElement = document.getElementById('totalTime');
+            if (totalTimeElement) {
+                totalTimeElement.textContent = `Total Meditation in 2025: ${userData.totalTime} seconds`;
+            }
         } else {
             console.log('No meditation data found, setting display to 0');
-            updateTotalTimeDisplay(0);
+            const totalTimeElement = document.getElementById('totalTime');
+            if (totalTimeElement) {
+                totalTimeElement.textContent = `Total Meditation in 2025: 0 seconds`;
+            }
         }
-    }).catch((error) => {
-        console.error('Load failed:', error);
-        updateTotalTimeDisplay(0);
     });
 }
 

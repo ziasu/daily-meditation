@@ -69,6 +69,12 @@ function stopMeditation() {
     if (completedSeconds > 30) { // Only save if meditated for more than 30 seconds
         saveMeditationTime(completedSeconds);
     }
+    
+    // Stop any playing audio
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+    }
 }
 
 function completeMeditation() {
@@ -78,6 +84,12 @@ function completeMeditation() {
     // Save the completed meditation time to Firebase
     const completedSeconds = Math.round(initialDuration * 60);
     saveMeditationTime(completedSeconds);
+    
+    // Stop any playing audio
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+    }
 }
 
 function resetTimer() {
@@ -111,12 +123,5 @@ function clearTotalTime() {
     if (auth.currentUser) {
         clearMeditationTime();
         updateTotalTimeDisplay(0);
-    }
-}
-
-function updateTotalTimeDisplay(seconds) {
-    const totalTimeElement = document.getElementById('totalTime');
-    if (totalTimeElement) {
-        totalTimeElement.textContent = `Total Meditation in 2025: ${seconds} seconds`;
     }
 } 
