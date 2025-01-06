@@ -76,6 +76,20 @@ auth.onAuthStateChanged((user) => {
     }
 });
 
+// Add this helper function to format time
+function formatTime(totalSeconds) {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    
+    if (minutes === 0) {
+        return `${seconds} seconds`;
+    } else if (seconds === 0) {
+        return `${minutes} minutes`;
+    } else {
+        return `${minutes} minutes and ${seconds} seconds`;
+    }
+}
+
 // Load user's meditation time
 function loadUserMeditationTime(userId) {
     console.log('Loading data for user:', userId);
@@ -92,8 +106,9 @@ function loadUserMeditationTime(userId) {
         const totalTimeElement = document.getElementById('totalTime');
         if (totalTimeElement) {
             const totalSeconds = userData && userData.totalTime ? userData.totalTime : 0;
-            totalTimeElement.textContent = `Total Meditation in 2025: ${totalSeconds} seconds`;
-            console.log('Display updated with:', totalSeconds);
+            const formattedTime = formatTime(totalSeconds);
+            totalTimeElement.textContent = `Total Meditation in 2025: ${formattedTime}`;
+            console.log('Display updated with:', formattedTime);
         } else {
             console.error('Total time element not found!');
         }
@@ -145,16 +160,5 @@ function clearMeditationTime() {
         }).catch((error) => {
             console.error('Clear failed:', error);
         });
-    }
-}
-
-// Update total time display
-function updateTotalTimeDisplay(totalSeconds) {
-    const totalTimeElement = document.getElementById('totalTime');
-    console.log('Updating display element with seconds:', totalSeconds); // Debug log
-    if (totalTimeElement) {
-        totalTimeElement.textContent = `Total Meditation in 2025: ${totalSeconds} seconds`;
-    } else {
-        console.error('Total time element not found!');
     }
 } 
