@@ -4,35 +4,37 @@ let selectedMinutes = 0;
 const YEAR = '2025';
 let totalMeditationMinutes = 0;
 
-// Add DOM element references
-const minutesDisplay = document.getElementById('minutes');
-const secondsDisplay = document.getElementById('seconds');
-const stopButton = document.getElementById('stopButton');
-const musicToggle = document.getElementById('musicToggle');
-const fiveMinMusic = document.getElementById('fiveMinMusic');
-const tenMinMusic = document.getElementById('tenMinMusic');
-let currentMusic = null;
-let activeButton = null;
-const resetTotalButton = document.getElementById('resetTotalButton');
-
 // JSONbin.io configuration
 const JSONBIN_ACCESS_KEY = '677a2f4be41b4d34e4701fe2';
 const BIN_ID = '677a2f6fe41b4d34e4701ff0';
 
-// Add this function at the top level, after the initial variable declarations
+// Wait for DOM to be fully loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Move all DOM element references here
+    const minutesDisplay = document.getElementById('minutes');
+    const secondsDisplay = document.getElementById('seconds');
+    const stopButton = document.getElementById('stopButton');
+    const musicToggle = document.getElementById('musicToggle');
+    const fiveMinMusic = document.getElementById('fiveMinMusic');
+    const tenMinMusic = document.getElementById('tenMinMusic');
+    const resetTotalButton = document.getElementById('resetTotalButton');
+    let currentMusic = null;
+    let activeButton = null;
+
+    // Add reset button event listener
+    resetTotalButton.addEventListener('click', resetTotalTime);
+
+    // Rest of your existing code...
+});
+
+// Keep async functions outside
 async function resetTotalTime() {
     try {
         if (confirm('Are you sure you want to reset your total meditation time?')) {
-            // Reset the total time
             totalMeditationMinutes = 0;
-            
-            // Update display
             displayTotalTime();
-            
-            // Update localStorage
             localStorage.setItem(`meditation_minutes_${YEAR}`, '0');
             
-            // Update JSONbin.io
             const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
                 method: 'PUT',
                 headers: {
@@ -53,7 +55,7 @@ async function resetTotalTime() {
     }
 }
 
-// Make sure the function is available globally
+// Make resetTotalTime available globally
 window.resetTotalTime = resetTotalTime;
 
 // Function to fetch meditation data from JSONbin.io
@@ -280,5 +282,3 @@ function displayTotalTime() {
 }
 
 window.addEventListener('load', displayTotalTime);
-
-resetTotalButton.addEventListener('click', resetTotalTime);
