@@ -34,9 +34,10 @@ async function saveMeditationTime(minutes) {
 async function getMeditationData() {
     try {
         updateSyncStatus('Loading...');
-        const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+        const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
             headers: {
-                'X-Master-Key': JSONBIN_API_KEY
+                'X-Master-Key': JSONBIN_API_KEY,
+                'Content-Type': 'application/json'
             }
         });
 
@@ -89,11 +90,16 @@ function handleTimer(duration) {
     document.getElementById('stopButton').disabled = false;
     document.getElementById('fiveMinButton').disabled = true;
     document.getElementById('tenMinButton').disabled = true;
+    document.getElementById('tenSecButton').disabled = true;
     
     // Handle music
     if (document.getElementById('musicToggle').checked) {
-        currentAudio = document.getElementById(`${duration}MinMusic`);
-        currentAudio.play();
+        // For 10-second timer, use 5-min music
+        const musicDuration = duration < 1 ? 5 : duration;
+        currentAudio = document.getElementById(`${musicDuration}MinMusic`);
+        if (currentAudio) {
+            currentAudio.play();
+        }
     }
     
     updateTimerDisplay();
