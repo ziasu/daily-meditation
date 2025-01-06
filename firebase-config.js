@@ -81,13 +81,18 @@ function formatTime(totalSeconds) {
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
     
-    if (minutes === 0) {
-        return `${seconds} seconds`;
-    } else if (seconds === 0) {
-        return `${minutes} minutes`;
+    let timeString = '';
+    
+    if (minutes > 0) {
+        timeString += `${minutes} minute${minutes !== 1 ? 's' : ''}`;
+        if (seconds > 0) {
+            timeString += ` and ${seconds} second${seconds !== 1 ? 's' : ''}`;
+        }
     } else {
-        return `${minutes} minutes and ${seconds} seconds`;
+        timeString = `${seconds} second${seconds !== 1 ? 's' : ''}`;
     }
+    
+    return timeString;
 }
 
 // Load user's meditation time
