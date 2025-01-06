@@ -5,8 +5,8 @@ const YEAR = '2025';
 let totalMeditationMinutes = 0;
 
 // JSONbin.io configuration
-const JSONBIN_ACCESS_KEY = '677b2fcce41b4d34e4707c22';
-const BIN_ID = '677b2f54e41b4d34e4707c02';
+const JSONBIN_ACCESS_KEY = '677a2f4be41b4d34e4701fe2';
+const BIN_ID = '677a2f6fe41b4d34e4701ff0';
 
 // Wait for DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
@@ -17,7 +17,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const musicToggle = document.getElementById('musicToggle');
     const fiveMinMusic = document.getElementById('fiveMinMusic');
     const tenMinMusic = document.getElementById('tenMinMusic');
-    const resetTotalButton = document.getElementById('resetTotalButton');
     let currentMusic = null;
     let activeButton = null;
 
@@ -133,22 +132,13 @@ document.addEventListener('DOMContentLoaded', function() {
         // Update total time
         const seconds = Math.round(selectedMinutes * 60);
         totalMeditationMinutes += seconds;
+        displayTotalTime();
         
-        // Update cloud storage first
-        updateCloudStorage().then(() => {
-            // Only update localStorage after successful cloud update
-            localStorage.setItem(`meditation_minutes_${YEAR}`, totalMeditationMinutes);
-            displayTotalTime();
-        }).catch(error => {
-            console.error('Failed to update cloud storage:', error);
-            // Still update local display and storage even if cloud fails
-            localStorage.setItem(`meditation_minutes_${YEAR}`, totalMeditationMinutes);
-            displayTotalTime();
-        });
+        // Update cloud storage only
+        updateCloudStorage();
     }
 
     // Add event listeners
-    resetTotalButton.addEventListener('click', resetTotalTime);
     musicToggle.addEventListener('change', () => {
         if (!musicToggle.checked && currentMusic) {
             currentMusic.pause();
@@ -179,16 +169,12 @@ async function fetchMeditationData() {
         
         const data = await response.json();
         console.log('Fetched data:', data);
-        // Always use cloud data as source of truth
+        // Use cloud data only
         totalMeditationMinutes = data[YEAR] || 0;
-        // Update localStorage with cloud data
-        localStorage.setItem(`meditation_minutes_${YEAR}`, totalMeditationMinutes);
         displayTotalTime();
     } catch (error) {
         console.error('Error fetching data:', error);
-        // Only use localStorage as fallback if we can't reach the cloud
-        const savedMinutes = localStorage.getItem(`meditation_minutes_${YEAR}`);
-        totalMeditationMinutes = parseInt(savedMinutes) || 0;
+        totalMeditationMinutes = 0;
         displayTotalTime();
     }
 }
@@ -214,33 +200,6 @@ async function updateCloudStorage() {
         }
     } catch (error) {
         console.error('Error updating cloud storage:', error);
-    }
-}
-
-async function resetTotalTime() {
-    try {
-        if (confirm('Are you sure you want to reset your total meditation time?')) {
-            totalMeditationMinutes = 0;
-            displayTotalTime();
-            localStorage.setItem(`meditation_minutes_${YEAR}`, '0');
-            
-            const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Master-Key': JSONBIN_ACCESS_KEY,
-                    'X-Bin-Meta': false
-                },
-                body: JSON.stringify({ [YEAR]: 0 })
-            });
-            
-            if (!response.ok) {
-                throw new Error('Failed to update cloud storage');
-            }
-        }
-    } catch (error) {
-        console.error('Error resetting total time:', error);
-        alert('Failed to reset total time. Please try again.');
     }
 }
 
