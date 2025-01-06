@@ -6,7 +6,7 @@ let totalMeditationMinutes = 0;
 
 // JSONbin.io configuration
 const JSONBIN_ACCESS_KEY = '677a2f4be41b4d34e4701fe2';
-const BIN_ID = '677a2f6fe41b4d34e4701ff0';
+const BIN_ID = '677b2f54e41b4d34e4707c02';
 
 // Wait for DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
@@ -61,7 +61,7 @@ window.resetTotalTime = resetTotalTime;
 // Function to fetch meditation data from JSONbin.io
 async function fetchMeditationData() {
     try {
-        const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+        const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
             method: 'GET',
             headers: {
                 'X-Master-Key': JSONBIN_ACCESS_KEY,
@@ -74,6 +74,7 @@ async function fetchMeditationData() {
         }
         
         const data = await response.json();
+        console.log('Fetched data:', data); // Debug log
         totalMeditationMinutes = data[YEAR] || 0;
         displayTotalTime();
     } catch (error) {
@@ -282,3 +283,6 @@ function displayTotalTime() {
 }
 
 window.addEventListener('load', displayTotalTime);
+
+// Add periodic sync
+setInterval(fetchMeditationData, 30000); // Sync every 30 seconds
