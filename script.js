@@ -26,8 +26,8 @@ function handleTimer(minutes) {
     
     // Handle music
     if (document.getElementById('musicToggle').checked) {
-        // For 10-second timer, use 5-min music
-        const musicId = minutes < 1 || minutes === 5 ? 'fiveMinMusic' : 'tenMinMusic';
+        // Update this line to use 5-min music for 1-min and 5-min sessions
+        const musicId = minutes <= 5 ? 'fiveMinMusic' : 'tenMinMusic';
         currentAudio = document.getElementById(musicId);
         if (currentAudio) {
             currentAudio.currentTime = 0; // Reset audio to start
