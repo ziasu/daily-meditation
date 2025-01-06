@@ -15,7 +15,7 @@ function handleTimer(minutes) {
     if (isRunning) return;
     
     initialDuration = minutes;
-    timeLeft = minutes * 60;
+    timeLeft = minutes === 5 ? (5 * 60 + 37) : minutes * 60;
     isRunning = true;
     
     // Update UI
@@ -73,7 +73,7 @@ function completeMeditation() {
     clearInterval(timer);
     resetTimer();
     
-    // Save the meditation time in minutes
+    // Still save only the base minutes (5 minutes for 5:37)
     console.log('Completing meditation with minutes:', initialDuration);
     saveMeditationTime(initialDuration);
 }
