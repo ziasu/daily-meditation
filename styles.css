@@ -68,15 +68,4 @@ button:disabled {
 .total-time p {
     margin: 0;
     padding: 0;
-}
-
-.total-time {
-    margin: 1rem 0;
-    color: #2c3e50;
-    font-size: 1.1rem;
-}
-
-.total-time p {
-    margin: 0;
-    padding: 0;
 } 
