@@ -61,14 +61,11 @@ function updateTimerDisplay() {
 function stopMeditation() {
     if (!isRunning) return;
     
-    const completedMinutes = Math.floor((initialDuration * 60 - timeLeft) / 60);
-    
     clearInterval(timer);
     resetTimer();
     
-    if (completedMinutes >= 1) { // Only save if at least 1 minute
-        saveMeditationTime(completedMinutes);
-    }
+    // No need to save time when canceling
+    console.log('Meditation canceled');
 }
 
 function completeMeditation() {
