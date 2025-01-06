@@ -36,18 +36,24 @@ async function getMeditationData() {
         updateSyncStatus('Loading...');
         
         // Log the request details
-        console.log('Fetching from:', `https://api.jsonbin.io/v3/b/${BIN_ID}/latest`);
+        const url = `https://api.jsonbin.io/v3/b/${BIN_ID}/latest`;
+        const headers = {
+            'X-Access-Key': JSONBIN_API_KEY,
+            'Content-Type': 'application/json'
+        };
         
-        const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-            method: 'GET',  // explicitly specify method
-            headers: {
-                'X-Access-Key': JSONBIN_API_KEY,  // changed to X-Access-Key
-                'Content-Type': 'application/json'
-            }
+        console.log('Request URL:', url);
+        console.log('Request headers:', headers);
+        
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: headers
         });
 
-        // Log the response
+        // Log full response details
         console.log('Response status:', response.status);
+        console.log('Response headers:', Object.fromEntries(response.headers));
+        
         const responseText = await response.text();
         console.log('Response body:', responseText);
 
