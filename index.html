@@ -11,7 +11,8 @@
         <h1>Zen Meditation Timer</h1>
         
         <div class="total-time">
-            <p id="totalTime">Total Meditation in 2025: 0 minutes</p>
+            <p id="totalTime">Total Meditation in 2025: 0 seconds</p>
+            <button id="clearButton" onclick="clearTotalTime()">Clear Total Time</button>
         </div>
         
         <div class="timer-display">
@@ -19,12 +20,13 @@
         </div>
 
         <div class="timer-controls">
+            <button id="tenSecButton" onclick="handleTimer(1/6)">10 Seconds</button>
             <button id="fiveMinButton" onclick="handleTimer(5)">5 Minutes</button>
             <button id="tenMinButton" onclick="handleTimer(10)">10 Minutes</button>
         </div>
 
         <div class="meditation-controls">
-            <button id="stopButton" onclick="stopMeditation()" disabled>Stop</button>
+            <button id="stopButton" onclick="stopMeditation()" disabled>Cancel Current Meditation</button>
         </div>
 
         <div class="audio-controls">
