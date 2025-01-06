@@ -4,9 +4,19 @@ let selectedMinutes = 0;
 const YEAR = '2025';
 let totalMeditationMinutes = 0;
 
+// Add DOM element references
+const minutesDisplay = document.getElementById('minutes');
+const secondsDisplay = document.getElementById('seconds');
+const stopButton = document.getElementById('stopButton');
+const musicToggle = document.getElementById('musicToggle');
+const fiveMinMusic = document.getElementById('fiveMinMusic');
+const tenMinMusic = document.getElementById('tenMinMusic');
+let currentMusic = null;
+let activeButton = null;
+
 // JSONbin.io configuration
-const JSONBIN_ACCESS_KEY = '677a2f4be41b4d34e4701fe2'; // Replace with your access key
-const BIN_ID = '677a2f6fe41b4d34e4701ff0'; // Replace with your bin ID
+const JSONBIN_ACCESS_KEY = '677a2f4be41b4d34e4701fe2';
+const BIN_ID = '677a2f6fe41b4d34e4701ff0';
 
 // Function to fetch meditation data from JSONbin.io
 async function fetchMeditationData() {
