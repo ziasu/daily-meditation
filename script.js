@@ -42,6 +42,9 @@ async function updateMeditationData(minutes) {
         const seconds = Math.round(minutes * 60);
         totalMeditationMinutes += seconds;
         
+        // Update display immediately
+        displayTotalTime();
+        
         // Save to localStorage as backup
         localStorage.setItem(`meditation_minutes_${YEAR}`, totalMeditationMinutes);
         
@@ -63,8 +66,6 @@ async function updateMeditationData(minutes) {
         if (!updateResponse.ok) {
             throw new Error(`HTTP error! status: ${updateResponse.status}`);
         }
-        
-        displayTotalTime();
     } catch (error) {
         console.error('Error updating data:', error);
     }
