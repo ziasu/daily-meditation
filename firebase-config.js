@@ -76,23 +76,13 @@ auth.onAuthStateChanged((user) => {
     }
 });
 
-// Add this helper function to format time
-function formatTime(totalSeconds) {
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    
-    let timeString = '';
-    
-    if (minutes > 0) {
-        timeString += `${minutes} minute${minutes !== 1 ? 's' : ''}`;
-        if (seconds > 0) {
-            timeString += ` and ${seconds} second${seconds !== 1 ? 's' : ''}`;
-        }
+// Simplify format time function to only handle minutes
+function formatTime(totalMinutes) {
+    if (totalMinutes === 0) {
+        return '0 minutes';
     } else {
-        timeString = `${seconds} second${seconds !== 1 ? 's' : ''}`;
+        return `${totalMinutes} minute${totalMinutes !== 1 ? 's' : ''}`;
     }
-    
-    return timeString;
 }
 
 // Load user's meditation time
@@ -110,20 +100,16 @@ function loadUserMeditationTime(userId) {
         
         const totalTimeElement = document.getElementById('totalTime');
         if (totalTimeElement) {
-            const totalSeconds = userData && userData.totalTime ? userData.totalTime : 0;
-            const formattedTime = formatTime(totalSeconds);
+            const totalMinutes = userData && userData.totalTime ? userData.totalTime : 0;
+            const formattedTime = formatTime(totalMinutes);
             totalTimeElement.textContent = `Total Meditation in 2025: ${formattedTime}`;
             console.log('Display updated with:', formattedTime);
-        } else {
-            console.error('Total time element not found!');
         }
-    }, (error) => {
-        console.error('Database read failed:', error);
     });
 }
 
-// Save meditation time to Firebase
-function saveMeditationTime(timeInSeconds) {
+// Save meditation time to Firebase (now in minutes)
+function saveMeditationTime(minutes) {
     const user = auth.currentUser;
     if (user) {
         const userRef = db.ref('users/' + user.uid);
@@ -133,7 +119,7 @@ function saveMeditationTime(timeInSeconds) {
             .then((snapshot) => {
                 const userData = snapshot.val() || {};
                 const currentTotal = userData.totalTime || 0;
-                const newTotal = currentTotal + timeInSeconds;
+                const newTotal = currentTotal + minutes;
                 
                 // Then update with new value
                 return userRef.set({
@@ -157,13 +143,16 @@ function clearMeditationTime() {
     const user = auth.currentUser;
     if (user) {
         const userRef = db.ref('users/' + user.uid);
-        userRef.set({
-            totalTime: 0,
-            lastUpdated: Date.now()
-        }).then(() => {
-            console.log('Meditation time cleared successfully');
-        }).catch((error) => {
-            console.error('Clear failed:', error);
-        });
+        userRef.remove()
+            .then(() => {
+                console.log('Meditation time cleared successfully');
+                const totalTimeElement = document.getElementById('totalTime');
+                if (totalTimeElement) {
+                    totalTimeElement.textContent = 'Total Meditation in 2025: 0 minutes';
+                }
+            })
+            .catch((error) => {
+                console.error('Clear failed:', error);
+            });
     }
 } 

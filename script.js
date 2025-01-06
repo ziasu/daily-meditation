@@ -61,32 +61,24 @@ function updateTimerDisplay() {
 function stopMeditation() {
     if (!isRunning) return;
     
-    const completedSeconds = Math.round((initialDuration * 60) - timeLeft);
+    const completedMinutes = Math.floor((initialDuration * 60 - timeLeft) / 60);
     
     clearInterval(timer);
     resetTimer();
     
-    if (completedSeconds > 30) { // Only save if meditated for more than 30 seconds
-        saveMeditationTime(completedSeconds);
-    }
-    
-    // Stop any playing audio
-    if (currentAudio) {
-        currentAudio.pause();
-        currentAudio.currentTime = 0;
+    if (completedMinutes >= 1) { // Only save if at least 1 minute
+        saveMeditationTime(completedMinutes);
     }
 }
 
 function completeMeditation() {
-    const completedSeconds = Math.round(initialDuration * 60);
-    
     // Clear the timer first
     clearInterval(timer);
     resetTimer();
     
-    // Then save the meditation time
-    console.log('Completing meditation with seconds:', completedSeconds);
-    saveMeditationTime(completedSeconds);
+    // Save the meditation time in minutes
+    console.log('Completing meditation with minutes:', initialDuration);
+    saveMeditationTime(initialDuration);
 }
 
 function resetTimer() {
@@ -119,6 +111,5 @@ function saveTotalTime(seconds) {
 function clearTotalTime() {
     if (auth.currentUser) {
         clearMeditationTime();
-        updateTotalTimeDisplay(0);
     }
 } 
