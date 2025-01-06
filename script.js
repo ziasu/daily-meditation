@@ -60,8 +60,22 @@ function updateSyncStatus(message) {
 
 function updateTotalTimeDisplay(totalMinutes) {
     const totalTimeElement = document.getElementById('totalTime');
-    const formattedMinutes = Number(totalMinutes).toFixed(2);
-    totalTimeElement.textContent = `Total Meditation in 2025: ${formattedMinutes} minutes`;
+    const totalSeconds = Math.round(totalMinutes * 60);  // Convert to seconds and round
+    
+    let displayText;
+    if (totalMinutes < 1) {
+        // Less than 1 minute: show only seconds
+        displayText = `${totalSeconds} seconds`;
+    } else {
+        // More than 1 minute: show minutes and seconds
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        displayText = seconds > 0 ? 
+            `${minutes} minutes ${seconds} seconds` : 
+            `${minutes} minutes`;
+    }
+    
+    totalTimeElement.textContent = `Total Meditation in 2025: ${displayText}`;
 }
 
 // Timer functions
