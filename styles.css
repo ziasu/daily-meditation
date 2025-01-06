@@ -68,4 +68,15 @@ button:disabled {
 .total-time p {
     margin: 0;
     padding: 0;
+}
+
+#resetTotalButton {
+    margin-top: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    background-color: #e74c3c;
+}
+
+#resetTotalButton:hover {
+    background-color: #c0392b;
 } 
