@@ -5,8 +5,8 @@ const YEAR = '2025';
 let totalMeditationMinutes = 0;
 
 // JSONbin.io configuration
-const JSONBIN_ACCESS_KEY = '677b2fcce41b4d34e4707c22';
-const BIN_ID = '677b2f54e41b4d34e4707c02';
+const JSONBIN_ACCESS_KEY = '$2b$10$MvlpIXdmzbNfmyAQtYM.AOmW2pNgBZlhsz10Y.FXc5lv687YKo.di';
+const BIN_ID = '677a2f6fe41b4d34e4701ff0';
 
 // Wait for DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
@@ -74,12 +74,15 @@ async function fetchMeditationData() {
         }
         
         const data = await response.json();
-        console.log('Fetched data:', data); // Debug log
+        console.log('Fetched data:', data);
+        // Always use cloud data as source of truth
         totalMeditationMinutes = data[YEAR] || 0;
+        // Update localStorage with cloud data
+        localStorage.setItem(`meditation_minutes_${YEAR}`, totalMeditationMinutes);
         displayTotalTime();
     } catch (error) {
         console.error('Error fetching data:', error);
-        // Fallback to localStorage if cloud fetch fails
+        // Only use localStorage as fallback if we can't reach the cloud
         const savedMinutes = localStorage.getItem(`meditation_minutes_${YEAR}`);
         totalMeditationMinutes = parseInt(savedMinutes) || 0;
         displayTotalTime();
@@ -232,14 +235,21 @@ function endMeditation() {
     }
     stopButton.disabled = true;
     
-    // Update total time synchronously first
+    // Update total time
     const seconds = Math.round(selectedMinutes * 60);
     totalMeditationMinutes += seconds;
-    displayTotalTime();
     
-    // Then update the cloud storage
-    localStorage.setItem(`meditation_minutes_${YEAR}`, totalMeditationMinutes);
-    updateCloudStorage();
+    // Update cloud storage first
+    updateCloudStorage().then(() => {
+        // Only update localStorage after successful cloud update
+        localStorage.setItem(`meditation_minutes_${YEAR}`, totalMeditationMinutes);
+        displayTotalTime();
+    }).catch(error => {
+        console.error('Failed to update cloud storage:', error);
+        // Still update local display and storage even if cloud fails
+        localStorage.setItem(`meditation_minutes_${YEAR}`, totalMeditationMinutes);
+        displayTotalTime();
+    });
 }
 
 // New function to handle cloud storage update
