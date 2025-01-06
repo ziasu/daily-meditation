@@ -76,12 +76,19 @@ auth.onAuthStateChanged((user) => {
 
 // Load user's meditation time
 function loadUserMeditationTime(userId) {
+    console.log('Loading data for user:', userId); // Debug log
     const userRef = db.ref('users/' + userId);
     userRef.once('value').then((snapshot) => {
         const userData = snapshot.val();
+        console.log('Loaded user data:', userData); // Debug log
         if (userData && userData.totalTime) {
             updateTotalTimeDisplay(userData.totalTime);
+        } else {
+            updateTotalTimeDisplay(0);
         }
+    }).catch((error) => {
+        console.error('Load failed:', error);
+        updateTotalTimeDisplay(0);
     });
 }
 
@@ -91,15 +98,27 @@ function saveMeditationTime(timeInSeconds) {
     if (user) {
         const userRef = db.ref('users/' + user.uid);
         userRef.transaction((userData) => {
+            console.log('Current user data:', userData); // Debug log
             if (userData === null) {
                 return {
-                    totalTime: timeInSeconds
+                    totalTime: timeInSeconds,
+                    lastUpdated: Date.now()
                 };
             }
             return {
-                totalTime: (userData.totalTime || 0) + timeInSeconds
+                totalTime: (userData.totalTime || 0) + timeInSeconds,
+                lastUpdated: Date.now()
             };
+        }).then((result) => {
+            console.log('Save successful:', result); // Debug log
+            if (result.committed) {
+                updateTotalTimeDisplay(result.snapshot.val().totalTime);
+            }
+        }).catch((error) => {
+            console.error('Save failed:', error);
         });
+    } else {
+        console.error('No user logged in');
     }
 }
 
