@@ -59,6 +59,7 @@ auth.onAuthStateChanged((user) => {
     const userEmail = document.getElementById('userEmail');
     
     if (user) {
+        console.log('User signed in:', user.uid); // Debug log
         // User is signed in
         authContainer.style.display = 'none';
         appContainer.style.display = 'block';
@@ -67,6 +68,7 @@ auth.onAuthStateChanged((user) => {
         // Initialize user's meditation data
         loadUserMeditationTime(user.uid);
     } else {
+        console.log('User signed out'); // Debug log
         // User is signed out
         authContainer.style.display = 'block';
         appContainer.style.display = 'none';
@@ -76,14 +78,16 @@ auth.onAuthStateChanged((user) => {
 
 // Load user's meditation time
 function loadUserMeditationTime(userId) {
-    console.log('Loading data for user:', userId); // Debug log
+    console.log('Loading data for user:', userId);
     const userRef = db.ref('users/' + userId);
-    userRef.once('value').then((snapshot) => {
+    userRef.on('value', (snapshot) => { // Changed from once() to on() to listen for changes
         const userData = snapshot.val();
-        console.log('Loaded user data:', userData); // Debug log
+        console.log('Loaded user data:', userData);
         if (userData && userData.totalTime) {
+            console.log('Updating display with total time:', userData.totalTime);
             updateTotalTimeDisplay(userData.totalTime);
         } else {
+            console.log('No meditation data found, setting display to 0');
             updateTotalTimeDisplay(0);
         }
     }).catch((error) => {
@@ -136,7 +140,10 @@ function clearMeditationTime() {
 // Update total time display
 function updateTotalTimeDisplay(totalSeconds) {
     const totalTimeElement = document.getElementById('totalTime');
+    console.log('Updating display element with seconds:', totalSeconds); // Debug log
     if (totalTimeElement) {
         totalTimeElement.textContent = `Total Meditation in 2025: ${totalSeconds} seconds`;
+    } else {
+        console.error('Total time element not found!');
     }
 } 

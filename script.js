@@ -1,5 +1,4 @@
 const YEAR = '2025';
-let totalSeconds = 0;
 let timer;
 let timeLeft;
 let isRunning = false;
