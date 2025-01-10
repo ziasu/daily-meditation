@@ -164,24 +164,73 @@ function saveMeditationTime(minutes) {
                 
                 // Update weekly and monthly statistics
                 const dayKey = today.toISOString().split('T')[0];
-                userData.statistics.weekly[stats.weekKey].totalMinutes += minutes;
-                userData.statistics.weekly[stats.weekKey].daysActive.add(dayKey);
-                userData.statistics.monthly[stats.monthKey].totalMinutes += minutes;
-                userData.statistics.monthly[stats.monthKey].daysActive.add(dayKey);
+                
+                // Initialize statistics if they don't exist
+                if (!userData.statistics) {
+                    userData.statistics = {
+                        weekly: {},
+                        monthly: {}
+                    };
+                }
+                
+                // Update statistics
+                if (!userData.statistics.weekly[stats.weekKey]) {
+                    userData.statistics.weekly[stats.weekKey] = { totalMinutes: 0, daysActive: [] };
+                }
+                if (!userData.statistics.monthly[stats.monthKey]) {
+                    userData.statistics.monthly[stats.monthKey] = { totalMinutes: 0, daysActive: [] };
+                }
 
-                // Update all values including existing streak logic
+                userData.statistics.weekly[stats.weekKey].totalMinutes += minutes;
+                if (!userData.statistics.weekly[stats.weekKey].daysActive.includes(dayKey)) {
+                    userData.statistics.weekly[stats.weekKey].daysActive.push(dayKey);
+                }
+                
+                userData.statistics.monthly[stats.monthKey].totalMinutes += minutes;
+                if (!userData.statistics.monthly[stats.monthKey].daysActive.includes(dayKey)) {
+                    userData.statistics.monthly[stats.monthKey].daysActive.push(dayKey);
+                }
+
+                // Update streak only after completing a meditation
+                const lastMeditationDate = userData.lastMeditationDate;
+                let currentStreak = userData.currentStreak || 0;
+                let bestStreak = userData.bestStreak || 0;
+
+                if (lastMeditationDate) {
+                    const lastDate = new Date(lastMeditationDate);
+                    lastDate.setHours(0, 0, 0, 0);
+                    
+                    if (today.getTime() === lastDate.getTime()) {
+                        // Same day meditation, don't update streak
+                    } else if (isConsecutiveDay(lastMeditationDate)) {
+                        // Consecutive day, increase streak
+                        currentStreak++;
+                        bestStreak = Math.max(currentStreak, bestStreak);
+                    } else {
+                        // Streak broken, start new streak
+                        currentStreak = 1;
+                    }
+                } else {
+                    // First meditation ever
+                    currentStreak = 1;
+                    bestStreak = 1;
+                }
+
+                // Update all values
                 return userRef.set({
-                    ...userData,
                     totalTime: (userData.totalTime || 0) + minutes,
                     lastMeditationDate: today.toISOString(),
-                    currentStreak: userData.currentStreak || 1,
-                    bestStreak: userData.bestStreak || 1,
-                    statistics: {
-                        weekly: userData.statistics.weekly,
-                        monthly: userData.statistics.monthly
-                    },
+                    currentStreak: currentStreak,
+                    bestStreak: bestStreak,
+                    statistics: userData.statistics,
                     lastUpdated: Date.now()
                 });
+            })
+            .then(() => {
+                console.log('Meditation time and streak saved successfully');
+            })
+            .catch((error) => {
+                console.error('Save failed:', error);
             });
     }
 }
