@@ -37,15 +37,31 @@
         
         <h1>Zen Meditation Timer</h1>
         
-        <!-- Add streak display -->
-        <div class="streak-info">
-            <p>Current Streak: <span id="currentStreak">0</span> days</p>
-            <p>Longest Streak: <span id="longestStreak">0</span> days</p>
-            <p>Last Meditation: <span id="lastMeditation">Never</span></p>
-        </div>
-        
         <div class="total-time">
-            <p id="totalTime">Total Meditation in 2025: 0 seconds</p>
+            <p id="totalTime">Total Meditation in 2025: 0 minutes</p>
+            <!-- Add visual streak indicator -->
+            <div class="streak-indicator">
+                <div class="streak-flames">
+                    <span id="streakFlame">🔥</span>
+                    <span id="streakCount">Current Streak: 0 days | Best Streak: 0 days</span>
+                </div>
+            </div>
+            <!-- Add statistics section -->
+            <div class="statistics">
+                <h3>Statistics</h3>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <h4>This Week</h4>
+                        <p id="weeklyStats">0 minutes</p>
+                        <p id="weeklyDays">0/7 days</p>
+                    </div>
+                    <div class="stat-box">
+                        <h4>This Year</h4>
+                        <p id="yearlyStats">0 minutes</p>
+                        <p id="yearlyDays">0/365 days</p>
+                    </div>
+                </div>
+            </div>
             <button id="clearButton" onclick="clearTotalTime()">Clear Total Time</button>
             <p id="deviceId" style="font-size: 0.8em; color: #666;"></p>
         </div>
@@ -85,6 +101,5 @@
     
     <script src="firebase-config.js"></script>
     <script src="script.js"></script>
-    <script src="streak.js"></script>
 </body>
 </html> 

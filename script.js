@@ -82,7 +82,7 @@ function completeMeditation() {
     clearInterval(timer);
     resetTimer();
     
-    // Save meditation time and update streak
+    // Still save only the base minutes (5 minutes for 5:25)
     console.log('Completing meditation with minutes:', initialDuration);
     saveMeditationTime(initialDuration);
 }
