@@ -66,7 +66,7 @@ auth.onAuthStateChanged((user) => {
         userEmail.textContent = user.email;
         
         // Initialize user's meditation data
-        loadUserMeditationTime(user.uid);
+        loadUserData(user.uid);
     } else {
         console.log('User signed out'); // Debug log
         // User is signed out
@@ -85,27 +85,88 @@ function formatTime(totalMinutes) {
     }
 }
 
-// Load user's meditation time
-function loadUserMeditationTime(userId) {
-    console.log('Loading data for user:', userId);
-    const userRef = db.ref('users/' + userId);
-    
-    // Remove any existing listeners first
-    userRef.off();
-    
-    // Add new listener
-    userRef.on('value', (snapshot) => {
-        const userData = snapshot.val();
-        console.log('Loaded user data:', userData);
+// Load user data including streak
+function loadUserData(userId) {
+    const userRef = firebase.database().ref(`users/${userId}`);
+    userRef.once('value').then((snapshot) => {
+        const userData = snapshot.val() || {};
         
-        const totalTimeElement = document.getElementById('totalTime');
-        if (totalTimeElement) {
-            const totalMinutes = userData && userData.totalTime ? userData.totalTime : 0;
-            const formattedTime = formatTime(totalMinutes);
-            totalTimeElement.textContent = `Total Meditation in 2025: ${formattedTime}`;
-            console.log('Display updated with:', formattedTime);
+        // Update streak display
+        document.getElementById('currentStreak').textContent = userData.currentStreak || 0;
+        document.getElementById('longestStreak').textContent = userData.longestStreak || 0;
+        document.getElementById('lastMeditation').textContent = userData.lastMeditation ? 
+            formatDate(new Date(userData.lastMeditation)) : 'Never';
+            
+        // Update total time if it exists
+        if (userData.totalTime) {
+            document.getElementById('totalTime').textContent = 
+                `Total Meditation in 2025: ${userData.totalTime} seconds`;
         }
     });
+}
+
+// Update streak when meditation completes
+function updateMeditationStreak(userId, meditationTime) {
+    const userRef = firebase.database().ref(`users/${userId}`);
+    
+    userRef.once('value').then((snapshot) => {
+        const userData = snapshot.val() || {};
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const lastMeditation = userData.lastMeditation ? new Date(userData.lastMeditation) : null;
+        let currentStreak = userData.currentStreak || 0;
+        const longestStreak = userData.longestStreak || 0;
+        
+        if (lastMeditation) {
+            lastMeditation.setHours(0, 0, 0, 0);
+            const diffDays = Math.floor((today - lastMeditation) / (1000 * 60 * 60 * 24));
+            
+            if (diffDays > 1) {
+                currentStreak = 1; // Streak broken
+            } else if (diffDays === 1) {
+                currentStreak++; // Streak continues
+            }
+            // If diffDays === 0, user has already meditated today
+        } else {
+            currentStreak = 1; // First meditation
+        }
+        
+        // Update longest streak if necessary
+        const newLongestStreak = Math.max(currentStreak, longestStreak);
+        
+        // Update total time
+        const totalTime = (userData.totalTime || 0) + meditationTime;
+        
+        // Update database
+        userRef.update({
+            lastMeditation: today.toISOString(),
+            currentStreak: currentStreak,
+            longestStreak: newLongestStreak,
+            totalTime: totalTime
+        });
+        
+        // Update UI
+        document.getElementById('currentStreak').textContent = currentStreak;
+        document.getElementById('longestStreak').textContent = newLongestStreak;
+        document.getElementById('lastMeditation').textContent = formatDate(today);
+        document.getElementById('totalTime').textContent = 
+            `Total Meditation in 2025: ${totalTime} seconds`;
+    });
+}
+
+// Helper function to format dates
+function formatDate(date) {
+    return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    });
+}
+
+// Modify your existing meditation completion handler
+function handleMeditationComplete(userId, duration) {
+    updateMeditationStreak(userId, duration * 60); // Convert minutes to seconds
 }
 
 // Save meditation time to Firebase (now in minutes)
@@ -120,15 +181,44 @@ function saveMeditationTime(minutes) {
                 const userData = snapshot.val() || {};
                 const currentTotal = userData.totalTime || 0;
                 const newTotal = currentTotal + minutes;
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
                 
-                // Then update with new value
-                return userRef.set({
+                // Calculate streak
+                const lastMeditation = userData.lastMeditation ? new Date(userData.lastMeditation) : null;
+                let currentStreak = userData.currentStreak || 0;
+                const longestStreak = userData.longestStreak || 0;
+                
+                if (lastMeditation) {
+                    lastMeditation.setHours(0, 0, 0, 0);
+                    const diffDays = Math.floor((today - lastMeditation) / (1000 * 60 * 60 * 24));
+                    
+                    if (diffDays > 1) {
+                        currentStreak = 1; // Streak broken
+                    } else if (diffDays === 1) {
+                        currentStreak++; // Streak continues
+                    }
+                    // If diffDays === 0, user has already meditated today
+                } else {
+                    currentStreak = 1; // First meditation
+                }
+                
+                // Update longest streak if necessary
+                const newLongestStreak = Math.max(currentStreak, longestStreak);
+                
+                // Then update with new values
+                return userRef.update({
                     totalTime: newTotal,
-                    lastUpdated: Date.now()
+                    lastUpdated: Date.now(),
+                    lastMeditation: today.toISOString(),
+                    currentStreak: currentStreak,
+                    longestStreak: newLongestStreak
                 });
             })
             .then(() => {
-                console.log('Meditation time saved successfully');
+                console.log('Meditation time and streak saved successfully');
+                // Update UI
+                loadUserData(user.uid);
             })
             .catch((error) => {
                 console.error('Save failed:', error);
@@ -143,16 +233,18 @@ function clearMeditationTime() {
     const user = auth.currentUser;
     if (user) {
         const userRef = db.ref('users/' + user.uid);
-        userRef.remove()
-            .then(() => {
-                console.log('Meditation time cleared successfully');
-                const totalTimeElement = document.getElementById('totalTime');
-                if (totalTimeElement) {
-                    totalTimeElement.textContent = 'Total Meditation in 2025: 0 minutes';
-                }
-            })
-            .catch((error) => {
-                console.error('Clear failed:', error);
-            });
+        userRef.update({
+            totalTime: 0,
+            currentStreak: 0,
+            longestStreak: 0,
+            lastMeditation: null
+        })
+        .then(() => {
+            console.log('Meditation data cleared successfully');
+            loadUserData(user.uid);
+        })
+        .catch((error) => {
+            console.error('Clear failed:', error);
+        });
     }
 } 
