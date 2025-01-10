@@ -85,57 +85,159 @@ function formatTime(totalMinutes) {
     }
 }
 
-// Load user's meditation time
-function loadUserMeditationTime(userId) {
-    console.log('Loading data for user:', userId);
-    const userRef = db.ref('users/' + userId);
+// Add these helper functions at the top of firebase-config.js
+function isConsecutiveDay(lastDate) {
+    const today = new Date();
+    const lastMeditation = new Date(lastDate);
     
-    // Remove any existing listeners first
-    userRef.off();
+    // Reset hours to compare just the dates
+    today.setHours(0, 0, 0, 0);
+    lastMeditation.setHours(0, 0, 0, 0);
     
-    // Add new listener
-    userRef.on('value', (snapshot) => {
-        const userData = snapshot.val();
-        console.log('Loaded user data:', userData);
-        
-        const totalTimeElement = document.getElementById('totalTime');
-        if (totalTimeElement) {
-            const totalMinutes = userData && userData.totalTime ? userData.totalTime : 0;
-            const formattedTime = formatTime(totalMinutes);
-            totalTimeElement.textContent = `Total Meditation in 2025: ${formattedTime}`;
-            console.log('Display updated with:', formattedTime);
-        }
-    });
+    // Calculate the difference in days
+    const diffTime = today.getTime() - lastMeditation.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    return diffDays === 1; // Return true if it's consecutive
 }
 
-// Save meditation time to Firebase (now in minutes)
+// Add these helper functions
+function getWeekNumber(d) {
+    d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+    return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+}
+
+function updateStatistics(userData) {
+    const today = new Date();
+    const currentWeek = getWeekNumber(today);
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+
+    // Initialize statistics if they don't exist
+    if (!userData.statistics) {
+        userData.statistics = {
+            weekly: {},
+            monthly: {}
+        };
+    }
+
+    const weekKey = `${currentYear}-W${currentWeek}`;
+    const monthKey = `${currentYear}-M${currentMonth + 1}`;
+
+    // Initialize current periods if they don't exist
+    if (!userData.statistics.weekly[weekKey]) {
+        userData.statistics.weekly[weekKey] = {
+            totalMinutes: 0,
+            daysActive: new Set()
+        };
+    }
+    if (!userData.statistics.monthly[monthKey]) {
+        userData.statistics.monthly[monthKey] = {
+            totalMinutes: 0,
+            daysActive: new Set()
+        };
+    }
+
+    return {
+        weekKey,
+        monthKey,
+        currentWeek,
+        currentMonth,
+        currentYear
+    };
+}
+
+// Update saveMeditationTime function
 function saveMeditationTime(minutes) {
     const user = auth.currentUser;
     if (user) {
         const userRef = db.ref('users/' + user.uid);
-        
-        // First get the current value
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
         userRef.once('value')
             .then((snapshot) => {
                 const userData = snapshot.val() || {};
-                const currentTotal = userData.totalTime || 0;
-                const newTotal = currentTotal + minutes;
+                const stats = updateStatistics(userData);
                 
-                // Then update with new value
+                // Update weekly and monthly statistics
+                const dayKey = today.toISOString().split('T')[0];
+                userData.statistics.weekly[stats.weekKey].totalMinutes += minutes;
+                userData.statistics.weekly[stats.weekKey].daysActive.add(dayKey);
+                userData.statistics.monthly[stats.monthKey].totalMinutes += minutes;
+                userData.statistics.monthly[stats.monthKey].daysActive.add(dayKey);
+
+                // Update all values including existing streak logic
                 return userRef.set({
-                    totalTime: newTotal,
+                    ...userData,
+                    totalTime: (userData.totalTime || 0) + minutes,
+                    lastMeditationDate: today.toISOString(),
+                    currentStreak: userData.currentStreak || 1,
+                    bestStreak: userData.bestStreak || 1,
+                    statistics: {
+                        weekly: userData.statistics.weekly,
+                        monthly: userData.statistics.monthly
+                    },
                     lastUpdated: Date.now()
                 });
-            })
-            .then(() => {
-                console.log('Meditation time saved successfully');
-            })
-            .catch((error) => {
-                console.error('Save failed:', error);
             });
-    } else {
-        console.error('No user logged in');
     }
+}
+
+// Update loadUserMeditationTime to display statistics
+function loadUserMeditationTime(userId) {
+    console.log('Loading data for user:', userId);
+    const userRef = db.ref('users/' + userId);
+    
+    userRef.off();
+    
+    userRef.on('value', (snapshot) => {
+        const userData = snapshot.val();
+        console.log('Loaded user data:', userData);
+        
+        if (userData) {
+            // Update total time display
+            const totalTimeElement = document.getElementById('totalTime');
+            if (totalTimeElement) {
+                const totalMinutes = userData.totalTime || 0;
+                const formattedTime = formatTime(totalMinutes);
+                totalTimeElement.textContent = `Total Meditation in 2025: ${formattedTime}`;
+            }
+            
+            // Update streak display
+            const streakElement = document.getElementById('streakCount');
+            if (streakElement) {
+                const currentStreak = userData.currentStreak || 0;
+                const bestStreak = userData.bestStreak || 0;
+                streakElement.textContent = `Current Streak: ${currentStreak} days | Best Streak: ${bestStreak} days`;
+            }
+
+            // Update statistics
+            if (userData.statistics) {
+                const stats = updateStatistics(userData);
+                const weekKey = stats.weekKey;
+                const monthKey = stats.monthKey;
+
+                const weeklyStats = userData.statistics.weekly[weekKey] || { totalMinutes: 0, daysActive: [] };
+                const monthlyStats = userData.statistics.monthly[monthKey] || { totalMinutes: 0, daysActive: [] };
+
+                document.getElementById('weeklyStats').textContent = `${weeklyStats.totalMinutes} minutes`;
+                document.getElementById('monthlyStats').textContent = `${monthlyStats.totalMinutes} minutes`;
+                document.getElementById('weeklyDays').textContent = `${weeklyStats.daysActive.length}/7 days`;
+                document.getElementById('monthlyDays').textContent = `${monthlyStats.daysActive.length}/30 days`;
+
+                // Update streak flame visibility
+                const streakFlame = document.getElementById('streakFlame');
+                if (userData.currentStreak > 1) {
+                    streakFlame.style.display = 'inline';
+                } else {
+                    streakFlame.style.display = 'none';
+                }
+            }
+        }
+    });
 }
 
 // Clear meditation time in Firebase

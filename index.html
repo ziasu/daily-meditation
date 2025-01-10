@@ -38,7 +38,30 @@
         <h1>Zen Meditation Timer</h1>
         
         <div class="total-time">
-            <p id="totalTime">Total Meditation in 2025: 0 seconds</p>
+            <p id="totalTime">Total Meditation in 2025: 0 minutes</p>
+            <!-- Add visual streak indicator -->
+            <div class="streak-indicator">
+                <div class="streak-flames">
+                    <span id="streakFlame">🔥</span>
+                    <span id="streakCount">Current Streak: 0 days | Best Streak: 0 days</span>
+                </div>
+            </div>
+            <!-- Add statistics section -->
+            <div class="statistics">
+                <h3>Statistics</h3>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <h4>This Week</h4>
+                        <p id="weeklyStats">0 minutes</p>
+                        <p id="weeklyDays">0/7 days</p>
+                    </div>
+                    <div class="stat-box">
+                        <h4>This Month</h4>
+                        <p id="monthlyStats">0 minutes</p>
+                        <p id="monthlyDays">0/30 days</p>
+                    </div>
+                </div>
+            </div>
             <button id="clearButton" onclick="clearTotalTime()">Clear Total Time</button>
             <p id="deviceId" style="font-size: 0.8em; color: #666;"></p>
         </div>
