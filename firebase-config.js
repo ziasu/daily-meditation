@@ -160,7 +160,7 @@ function saveMeditationTime(minutes) {
                 const userData = snapshot.val() || {};
                 const stats = updateStatistics(userData);
                 
-                // Update weekly and monthly statistics
+                // Get today's date in YYYY-MM-DD format
                 const dayKey = today.toISOString().split('T')[0];
                 
                 // Initialize statistics if they don't exist
@@ -171,25 +171,46 @@ function saveMeditationTime(minutes) {
                     };
                 }
                 
-                // Update statistics
+                // Ensure arrays exist
                 if (!userData.statistics.weekly[stats.weekKey]) {
-                    userData.statistics.weekly[stats.weekKey] = { totalMinutes: 0, daysActive: [] };
+                    userData.statistics.weekly[stats.weekKey] = { 
+                        totalMinutes: 0, 
+                        daysActive: [] 
+                    };
                 }
                 if (!userData.statistics.yearly[stats.yearKey]) {
-                    userData.statistics.yearly[stats.yearKey] = { totalMinutes: 0, daysActive: [] };
+                    userData.statistics.yearly[stats.yearKey] = { 
+                        totalMinutes: 0, 
+                        daysActive: [] 
+                    };
                 }
 
+                // Ensure daysActive is an array
+                if (!Array.isArray(userData.statistics.weekly[stats.weekKey].daysActive)) {
+                    userData.statistics.weekly[stats.weekKey].daysActive = [];
+                }
+                if (!Array.isArray(userData.statistics.yearly[stats.yearKey].daysActive)) {
+                    userData.statistics.yearly[stats.yearKey].daysActive = [];
+                }
+
+                // Update weekly statistics
                 userData.statistics.weekly[stats.weekKey].totalMinutes += minutes;
                 if (!userData.statistics.weekly[stats.weekKey].daysActive.includes(dayKey)) {
                     userData.statistics.weekly[stats.weekKey].daysActive.push(dayKey);
                 }
                 
+                // Update yearly statistics
                 userData.statistics.yearly[stats.yearKey].totalMinutes += minutes;
                 if (!userData.statistics.yearly[stats.yearKey].daysActive.includes(dayKey)) {
                     userData.statistics.yearly[stats.yearKey].daysActive.push(dayKey);
                 }
 
-                // Update streak only after completing a meditation
+                console.log('Saving statistics:', {
+                    weekly: userData.statistics.weekly[stats.weekKey],
+                    yearly: userData.statistics.yearly[stats.yearKey]
+                });
+
+                // Rest of your existing streak logic...
                 const lastMeditationDate = userData.lastMeditationDate;
                 let currentStreak = userData.currentStreak || 0;
                 let bestStreak = userData.bestStreak || 0;
