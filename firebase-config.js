@@ -112,7 +112,7 @@ function getWeekNumber(d) {
 function updateStatistics(userData) {
     const today = new Date();
     const currentWeek = getWeekNumber(today);
-    const currentYear = today.getFullYear();
+    const currentYear = today.getFullYear().toString();
 
     // Initialize statistics if they don't exist
     if (!userData.statistics) {
@@ -122,8 +122,16 @@ function updateStatistics(userData) {
         };
     }
 
+    // Initialize weekly and yearly objects if they don't exist
+    if (!userData.statistics.weekly) {
+        userData.statistics.weekly = {};
+    }
+    if (!userData.statistics.yearly) {
+        userData.statistics.yearly = {};
+    }
+
     const weekKey = `${currentYear}-W${currentWeek}`;
-    const yearKey = `${currentYear}`;
+    const yearKey = currentYear;
 
     // Initialize current periods if they don't exist
     if (!userData.statistics.weekly[weekKey]) {
