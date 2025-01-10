@@ -161,7 +161,7 @@ function saveMeditationTime(minutes) {
                 const stats = updateStatistics(userData);
                 const dayKey = today.toISOString().split('T')[0];
 
-                // Initialize statistics if it doesn't exist
+                // Initialize statistics structure
                 if (!userData.statistics) {
                     userData.statistics = {
                         weekly: {},
@@ -169,38 +169,38 @@ function saveMeditationTime(minutes) {
                     };
                 }
 
-                // Initialize weekly data
+                // Initialize weekly data with empty array
                 if (!userData.statistics.weekly[stats.weekKey]) {
                     userData.statistics.weekly[stats.weekKey] = {
                         totalMinutes: 0,
                         daysActive: []
                     };
+                } else if (!userData.statistics.weekly[stats.weekKey].daysActive) {
+                    userData.statistics.weekly[stats.weekKey].daysActive = [];
                 }
 
-                // Initialize yearly data
+                // Initialize yearly data with empty array
                 if (!userData.statistics.yearly[stats.yearKey]) {
                     userData.statistics.yearly[stats.yearKey] = {
                         totalMinutes: 0,
                         daysActive: []
                     };
-                }
-
-                // Convert daysActive to array if it's not already
-                if (!Array.isArray(userData.statistics.weekly[stats.weekKey].daysActive)) {
-                    userData.statistics.weekly[stats.weekKey].daysActive = [];
-                }
-                if (!Array.isArray(userData.statistics.yearly[stats.yearKey].daysActive)) {
+                } else if (!userData.statistics.yearly[stats.yearKey].daysActive) {
                     userData.statistics.yearly[stats.yearKey].daysActive = [];
                 }
 
                 // Update weekly statistics
-                userData.statistics.weekly[stats.weekKey].totalMinutes += minutes;
+                userData.statistics.weekly[stats.weekKey].totalMinutes = 
+                    (userData.statistics.weekly[stats.weekKey].totalMinutes || 0) + minutes;
+                
                 if (!userData.statistics.weekly[stats.weekKey].daysActive.includes(dayKey)) {
                     userData.statistics.weekly[stats.weekKey].daysActive.push(dayKey);
                 }
 
                 // Update yearly statistics
-                userData.statistics.yearly[stats.yearKey].totalMinutes += minutes;
+                userData.statistics.yearly[stats.yearKey].totalMinutes = 
+                    (userData.statistics.yearly[stats.yearKey].totalMinutes || 0) + minutes;
+                
                 if (!userData.statistics.yearly[stats.yearKey].daysActive.includes(dayKey)) {
                     userData.statistics.yearly[stats.yearKey].daysActive.push(dayKey);
                 }
@@ -224,18 +224,14 @@ function saveMeditationTime(minutes) {
                     lastDate.setHours(0, 0, 0, 0);
                     
                     if (today.getTime() === lastDate.getTime()) {
-                        // Same day meditation, keep current streak
                         currentStreak = currentStreak || 1;
                     } else if (isConsecutiveDay(lastMeditationDate)) {
-                        // Consecutive day, increase streak
                         currentStreak++;
                         bestStreak = Math.max(currentStreak, bestStreak);
                     } else {
-                        // Streak broken, start new streak
                         currentStreak = 1;
                     }
                 } else {
-                    // First meditation ever
                     currentStreak = 1;
                     bestStreak = 1;
                 }
