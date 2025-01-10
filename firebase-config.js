@@ -112,39 +112,37 @@ function getWeekNumber(d) {
 function updateStatistics(userData) {
     const today = new Date();
     const currentWeek = getWeekNumber(today);
-    const currentMonth = today.getMonth();
     const currentYear = today.getFullYear();
 
     // Initialize statistics if they don't exist
     if (!userData.statistics) {
         userData.statistics = {
             weekly: {},
-            monthly: {}
+            yearly: {}
         };
     }
 
     const weekKey = `${currentYear}-W${currentWeek}`;
-    const monthKey = `${currentYear}-M${currentMonth + 1}`;
+    const yearKey = `${currentYear}`;
 
     // Initialize current periods if they don't exist
     if (!userData.statistics.weekly[weekKey]) {
         userData.statistics.weekly[weekKey] = {
             totalMinutes: 0,
-            daysActive: new Set()
+            daysActive: []
         };
     }
-    if (!userData.statistics.monthly[monthKey]) {
-        userData.statistics.monthly[monthKey] = {
+    if (!userData.statistics.yearly[yearKey]) {
+        userData.statistics.yearly[yearKey] = {
             totalMinutes: 0,
-            daysActive: new Set()
+            daysActive: []
         };
     }
 
     return {
         weekKey,
-        monthKey,
+        yearKey,
         currentWeek,
-        currentMonth,
         currentYear
     };
 }
@@ -169,7 +167,7 @@ function saveMeditationTime(minutes) {
                 if (!userData.statistics) {
                     userData.statistics = {
                         weekly: {},
-                        monthly: {}
+                        yearly: {}
                     };
                 }
                 
@@ -177,8 +175,8 @@ function saveMeditationTime(minutes) {
                 if (!userData.statistics.weekly[stats.weekKey]) {
                     userData.statistics.weekly[stats.weekKey] = { totalMinutes: 0, daysActive: [] };
                 }
-                if (!userData.statistics.monthly[stats.monthKey]) {
-                    userData.statistics.monthly[stats.monthKey] = { totalMinutes: 0, daysActive: [] };
+                if (!userData.statistics.yearly[stats.yearKey]) {
+                    userData.statistics.yearly[stats.yearKey] = { totalMinutes: 0, daysActive: [] };
                 }
 
                 userData.statistics.weekly[stats.weekKey].totalMinutes += minutes;
@@ -186,9 +184,9 @@ function saveMeditationTime(minutes) {
                     userData.statistics.weekly[stats.weekKey].daysActive.push(dayKey);
                 }
                 
-                userData.statistics.monthly[stats.monthKey].totalMinutes += minutes;
-                if (!userData.statistics.monthly[stats.monthKey].daysActive.includes(dayKey)) {
-                    userData.statistics.monthly[stats.monthKey].daysActive.push(dayKey);
+                userData.statistics.yearly[stats.yearKey].totalMinutes += minutes;
+                if (!userData.statistics.yearly[stats.yearKey].daysActive.includes(dayKey)) {
+                    userData.statistics.yearly[stats.yearKey].daysActive.push(dayKey);
                 }
 
                 // Update streak only after completing a meditation
@@ -267,15 +265,15 @@ function loadUserMeditationTime(userId) {
             if (userData.statistics) {
                 const stats = updateStatistics(userData);
                 const weekKey = stats.weekKey;
-                const monthKey = stats.monthKey;
+                const yearKey = stats.yearKey;
 
                 const weeklyStats = userData.statistics.weekly[weekKey] || { totalMinutes: 0, daysActive: [] };
-                const monthlyStats = userData.statistics.monthly[monthKey] || { totalMinutes: 0, daysActive: [] };
+                const yearlyStats = userData.statistics.yearly[yearKey] || { totalMinutes: 0, daysActive: [] };
 
                 document.getElementById('weeklyStats').textContent = `${weeklyStats.totalMinutes} minutes`;
-                document.getElementById('monthlyStats').textContent = `${monthlyStats.totalMinutes} minutes`;
+                document.getElementById('yearlyStats').textContent = `${yearlyStats.totalMinutes} minutes`;
                 document.getElementById('weeklyDays').textContent = `${weeklyStats.daysActive.length}/7 days`;
-                document.getElementById('monthlyDays').textContent = `${monthlyStats.daysActive.length}/30 days`;
+                document.getElementById('yearlyDays').textContent = `${yearlyStats.daysActive.length}/365 days`;
 
                 // Update streak flame visibility
                 const streakFlame = document.getElementById('streakFlame');
