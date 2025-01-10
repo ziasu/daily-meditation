@@ -157,35 +157,35 @@ function saveMeditationTime(minutes) {
 
         userRef.once('value')
             .then((snapshot) => {
-                const userData = snapshot.val() || {};
+                let userData = snapshot.val() || {};
                 const stats = updateStatistics(userData);
-                
-                // Get today's date in YYYY-MM-DD format
                 const dayKey = today.toISOString().split('T')[0];
-                
-                // Initialize statistics if they don't exist
+
+                // Initialize statistics if it doesn't exist
                 if (!userData.statistics) {
                     userData.statistics = {
                         weekly: {},
                         yearly: {}
                     };
                 }
-                
-                // Ensure arrays exist
+
+                // Initialize weekly data
                 if (!userData.statistics.weekly[stats.weekKey]) {
-                    userData.statistics.weekly[stats.weekKey] = { 
-                        totalMinutes: 0, 
-                        daysActive: [] 
-                    };
-                }
-                if (!userData.statistics.yearly[stats.yearKey]) {
-                    userData.statistics.yearly[stats.yearKey] = { 
-                        totalMinutes: 0, 
-                        daysActive: [] 
+                    userData.statistics.weekly[stats.weekKey] = {
+                        totalMinutes: 0,
+                        daysActive: []
                     };
                 }
 
-                // Ensure daysActive is an array
+                // Initialize yearly data
+                if (!userData.statistics.yearly[stats.yearKey]) {
+                    userData.statistics.yearly[stats.yearKey] = {
+                        totalMinutes: 0,
+                        daysActive: []
+                    };
+                }
+
+                // Convert daysActive to array if it's not already
                 if (!Array.isArray(userData.statistics.weekly[stats.weekKey].daysActive)) {
                     userData.statistics.weekly[stats.weekKey].daysActive = [];
                 }
@@ -198,19 +198,23 @@ function saveMeditationTime(minutes) {
                 if (!userData.statistics.weekly[stats.weekKey].daysActive.includes(dayKey)) {
                     userData.statistics.weekly[stats.weekKey].daysActive.push(dayKey);
                 }
-                
+
                 // Update yearly statistics
                 userData.statistics.yearly[stats.yearKey].totalMinutes += minutes;
                 if (!userData.statistics.yearly[stats.yearKey].daysActive.includes(dayKey)) {
                     userData.statistics.yearly[stats.yearKey].daysActive.push(dayKey);
                 }
 
+                // Debug log
                 console.log('Saving statistics:', {
+                    weekKey: stats.weekKey,
+                    yearKey: stats.yearKey,
                     weekly: userData.statistics.weekly[stats.weekKey],
-                    yearly: userData.statistics.yearly[stats.yearKey]
+                    yearly: userData.statistics.yearly[stats.yearKey],
+                    dayKey: dayKey
                 });
 
-                // Rest of your existing streak logic...
+                // Update streak logic
                 const lastMeditationDate = userData.lastMeditationDate;
                 let currentStreak = userData.currentStreak || 0;
                 let bestStreak = userData.bestStreak || 0;
@@ -220,7 +224,8 @@ function saveMeditationTime(minutes) {
                     lastDate.setHours(0, 0, 0, 0);
                     
                     if (today.getTime() === lastDate.getTime()) {
-                        // Same day meditation, don't update streak
+                        // Same day meditation, keep current streak
+                        currentStreak = currentStreak || 1;
                     } else if (isConsecutiveDay(lastMeditationDate)) {
                         // Consecutive day, increase streak
                         currentStreak++;
@@ -235,7 +240,7 @@ function saveMeditationTime(minutes) {
                     bestStreak = 1;
                 }
 
-                // Update all values
+                // Save all updates
                 return userRef.set({
                     totalTime: (userData.totalTime || 0) + minutes,
                     lastMeditationDate: today.toISOString(),
